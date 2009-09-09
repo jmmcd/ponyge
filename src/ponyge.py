@@ -17,7 +17,7 @@ def readBNFFile(file_name):
     """Read a grammar file in BNF format and return the rules"""
     global NT
     global T
-    file = open(file_name, 'r')
+    infile = open(file_name, 'r')
     rules = {}
     # Non-Terminal set
     non_terminals = set()
@@ -25,7 +25,7 @@ def readBNFFile(file_name):
     terminals = set()
     start_rule = None
     # Read the grammar file
-    for line in file:
+    for line in infile:
         # Not read comment lines
         if not line.startswith("#"):
             # Split rules
@@ -102,7 +102,7 @@ def create_individual(length):
     return individual
 
 # Map individual
-def map(input, rules, start_rule):
+def generate(input, rules, start_rule):
     """Map input via rules to output"""
     global NT
     global T
@@ -216,7 +216,7 @@ def search_loop(max_generations, individuals, grammar):
         # Perform the mapping for each individual
         for i in range(len(individuals)):
             ind = individuals[i]
-            ind[1] = map(ind[2], grammar[0], grammar[3])
+            ind[1] = generate(ind[2], grammar[0], grammar[3])
             if ind[1] != None:
                 ind[0] = string_match("geva", ind[1])
         print_individuals(individuals)
