@@ -8,69 +8,119 @@ import sys
 import re
 import random
 
-# Non Terminal 
-NT = "NT"
-# Terminal 
-T = "T"
-# Read Grammar file
-def readBNFFile(file_name):
-    """Read a grammar file in BNF format and return the rules"""
-    global NT
-    global T
-    infile = open(file_name, 'r')
-    rules = {}
-    # Non-Terminal set
-    non_terminals = set()
-    # Terminal set
-    terminals = set()
-    start_rule = None
-    # Read the grammar file
-    for line in infile:
-        # Not read comment lines
-        if not line.startswith("#"):
-            # Split rules
-            # Everything must be on one line
-            if line.find("::="):
-                lhs, productions = line.split("::=")
-                lhs = lhs.strip()
-                if start_rule == None:
-                    # Need to make sure it is NT
-                    start_rule = (lhs, NT)
-                non_terminals.add(lhs)
-                # Split productions
-                productions = productions.split("|")
-                productions = [production.strip() for production in productions]
-                # Find terminals
-                tmp_productions = []
-                for production in productions:
-                    # <.+?> Non greedy match of anything between brackets
-                    non_terminal_pattern = "(<.+?>)"
-                    found = re.search(non_terminal_pattern, production)
-                    if not found:
-                        terminals.add(production)
-                        symbol = (production, "T")
-                        tmp_production = symbol
+class Grammar(object):
+    # Non Terminal 
+    NT = "NT"
+    # Terminal 
+    T = "T"
+
+    def __init__(self, file_name):
+        self.readBNFFile(file_name)
+
+    # Read Grammar file
+    def readBNFFile(self, file_name):
+        """Read a grammar file in BNF format and return the rules"""
+        infile = open(file_name, 'r')
+        self.rules = {}
+        # Non-Terminal set
+        self.non_terminals = set()
+        # Terminal set
+        self.terminals = set()
+        self.start_rule = None
+        # Read the grammar file
+        for line in infile:
+            # Not read comment lines
+            if not line.startswith("#"):
+                # Split rules
+                # Everything must be on one line
+                if line.find("::="):
+                    lhs, productions = line.split("::=")
+                    lhs = lhs.strip()
+                    if self.start_rule == None:
+                        # Need to make sure it is NT
+                        self.start_rule = (lhs, self.NT)
+                    self.non_terminals.add(lhs)
+                    # Split productions
+                    productions = productions.split("|")
+                    productions = [production.strip() for production in productions]
+                    # Find terminals
+                    tmp_productions = []
+                    for production in productions:
+                        # <.+?> Non greedy match of anything between brackets
+                        non_terminal_pattern = "(<.+?>)"
+                        found = re.search(non_terminal_pattern, production)
+                        if not found:
+                            self.terminals.add(production)
+                            symbol = (production, "T")
+                            tmp_production = symbol
+                        else:
+                            # Match non terminal or terminal pattern
+                            pattern = "<.+?>|[^<>]*";
+                            # Find Non-Terminals
+                            found = re.findall(pattern, production)
+                            tmp_production = []
+                            for f in found:
+                                if f != '':
+                                    nt = re.search(non_terminal_pattern, f)
+                                    if not nt:
+                                        symbol = (f, self.T)
+                                    else:
+                                        symbol = (f, self.NT)
+                                    tmp_production.append(symbol)
+                        tmp_productions.append(tmp_production)
+                    # Create a rule
+                    if not self.rules.has_key(lhs):
+                        self.rules[lhs] = tmp_productions
                     else:
-                        # Match non terminal or terminal pattern
-                        pattern = "<.+?>|[^<>]*";
-                        # Find Non-Terminals
-                        found = re.findall(pattern, production)
-                        tmp_production = []
-                        for f in found:
-                            if f != '':
-                                nt = re.search(non_terminal_pattern, f)
-                                if not nt:
-                                    symbol = (f, T)
-                                else:
-                                    symbol = (f, NT)
-                                tmp_production.append(symbol)
-                    tmp_productions.append(tmp_production)
-                # Create a rule
-                if not rules.has_key(lhs):
-                    rules[lhs] = tmp_productions
+                        print "Hmm, lhs should be unique"
+
+        
+    # Map individual
+    def generate(self, input):
+        """Map input via rules to output"""
+        cnt = 0
+        wraps = 0
+        max_wraps = 2
+        nt_pattern = "(<.+?>)";
+        output = []
+        # Stack of symbols to expand
+        unexpanded_symbols = []
+        unexpanded_symbols.append(self.start_rule)
+        # Should I write it recursivly??!! (Good to test speed difference)
+        while (cnt < len(input)) and (wraps < max_wraps) and (len(unexpanded_symbols) > 0):
+            # Wrap
+            if cnt == len(input):
+                wraps += 1
+                cnt = 0
+            # Get a prodcution
+            current_symbol = unexpanded_symbols.pop(0)
+            # Get output if it is a terminal        
+            if current_symbol[1] != self.NT:
+                output.append(current_symbol[0])
+            else:
+                # Get production choices
+                production_choices = self.rules[current_symbol[0]]
+                # Select a production
+                current_production = input[cnt] % len(production_choices)
+                # Use input if there was more then 1 choice
+                if len(production_choices) > 1:
+                    cnt += 1
+                # Read left to right, add the current productions to stack
+                tmp_list = []
+                tmp_choice = production_choices[current_production]
+                # Stupid python treats a lonely tuple as a list in a for-loop
+                # so it loops over the elements in the tuple
+                if len(tmp_choice) == 2 and (tmp_choice[1] == self.T or tmp_choice[1] == self.NT):
+                    tmp_tuple = (tmp_choice[0], tmp_choice[1])
+                    tmp_list.append(tmp_tuple)
                 else:
-                    print "Hmm, lhs should be unique"
-    return (rules, terminals, non_terminals, start_rule)          
+                    for e in tmp_choice:
+                        tmp_list.append(e)
+                for e in unexpanded_symbols:
+                    tmp_list.append(e)
+                unexpanded_symbols = tmp_list
+        return output
+
 
 # Create fitness function
 def string_match(target, output):
@@ -105,55 +155,6 @@ class Individual(object):
 
     def evaluate(self, fitness):
         self.fitness = fitness(self.genome)
-
-        
-# Map individual
-def generate(input, rules, start_rule):
-    """Map input via rules to output"""
-    global NT
-    global T
-    cnt = 0
-    wraps = 0
-    max_wraps = 2
-    nt_pattern = "(<.+?>)";
-    output = []
-    # Stack of symbols to expand
-    unexpanded_symbols = []
-    unexpanded_symbols.append(start_rule)
-    # Should I write it recursivly??!! (Good to test speed difference)
-    while (cnt < len(input)) and (wraps < max_wraps) and (len(unexpanded_symbols) > 0):
-        # Wrap
-        if cnt == len(input):
-            wraps += 1
-            cnt = 0
-        # Get a prodcution
-        current_symbol = unexpanded_symbols.pop(0)
-        # Get output if it is a terminal        
-        if current_symbol[1] != NT:
-            output.append(current_symbol[0])
-        else:
-            # Get production choices
-            production_choices = rules[current_symbol[0]]
-            # Select a production
-            current_production = input[cnt] % len(production_choices)
-            # Use input if there was more then 1 choice
-            if len(production_choices) > 1:
-                cnt += 1
-            # Read left to right, add the current productions to stack
-            tmp_list = []
-            tmp_choice = production_choices[current_production]
-            # Stupid python treats a lonely tuple as a list in a for-loop
-            # so it loops over the elements in the tuple
-            if len(tmp_choice) == 2 and (tmp_choice[1] == T or tmp_choice[1] == NT):
-                tmp_tuple = (tmp_choice[0], tmp_choice[1])
-                tmp_list.append(tmp_tuple)
-            else:
-                for e in tmp_choice:
-                    tmp_list.append(e)
-            for e in unexpanded_symbols:
-                tmp_list.append(e)
-            unexpanded_symbols = tmp_list
-    return output
 
 # Initialize population
 def initialise_population(size):
@@ -221,7 +222,7 @@ def search_loop(max_generations, individuals, grammar):
         # Perform the mapping for each individual
         for i in range(len(individuals)):
             ind = individuals[i]
-            ind.phenotype = generate(ind.genome, grammar[0], grammar[3])
+            ind.phenotype = grammar.generate(ind.genome)
             if ind.phenotype != None:
                 ind.evaluate(lambda x: string_match("geva", x))
         print_individuals(individuals)
@@ -241,7 +242,7 @@ def search_loop(max_generations, individuals, grammar):
 # Run program
 def main():
     # Read grammar
-    bnf_grammar = readBNFFile("grammars/letter.bnf")
+    bnf_grammar = Grammar("grammars/letter.bnf")
     # Create Individuals
     individuals = initialise_population(10)
     # Loop
