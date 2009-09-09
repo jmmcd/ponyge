@@ -15,6 +15,10 @@ class Grammar(object):
     T = "T"
 
     def __init__(self, file_name):
+        if file_name.endswith("pybnf"):
+            self.python_mode = True
+        else:
+            self.python_mode = False
         self.readBNFFile(file_name)
 
     # Read Grammar file
@@ -119,10 +123,24 @@ class Grammar(object):
                 for e in unexpanded_symbols:
                     tmp_list.append(e)
                 unexpanded_symbols = tmp_list
+        if len(unexpanded_symbols) > 0:
+            return None
+        output = "".join(output)
+        if self.python_mode:
+            counter = 0
+            for char in output:
+                if char == "{":
+                    counter += 1
+                elif char == "}":
+                    counter -= 1
+                tabstr = "\n" + "  " * counter
+                if char == "{" or char == "}":
+                    output = output.replace(char, tabstr, 1)
+            output = "\n".join([line for line in output.split("\n") 
+                                if line.strip() != ""])
         return output
 
-
-# Create fitness function
+# String-match fitness function
 def string_match(target, output):
     """Fitness function for matching a string. 
     Takes an output string and return fitness"""
@@ -138,6 +156,18 @@ def string_match(target, output):
         cnt += 1
     return fitness
 
+# XOR fitness function with python evaluation
+def xor_fitness(candidate):
+    def xor(x, y):
+        return (x and not y) or (y and not x)
+    f = eval(candidate)
+    fitness = 0
+    for x in [False, True]:
+        for y in [False, True]:
+            if f(x, y) != xor(x, y):
+                fitness += 1
+    return fitness
+
 class Individual(object):
     """A GE 8 bit individual"""
     def __init__(self, genome, length=100):
@@ -150,11 +180,11 @@ class Individual(object):
         self.phenotype = None
 
     def __str__(self):
-        return ("Individual: " + str(self.genome) + "; " + 
+        return ("Individual: " + 
                 str(self.phenotype) + "; " + str(self.fitness))
 
     def evaluate(self, fitness):
-        self.fitness = fitness(self.genome)
+        self.fitness = fitness(self.phenotype)
 
 # Initialize population
 def initialise_population(size):
@@ -224,7 +254,8 @@ def search_loop(max_generations, individuals, grammar):
             ind = individuals[i]
             ind.phenotype = grammar.generate(ind.genome)
             if ind.phenotype != None:
-                ind.evaluate(lambda x: string_match("geva", x))
+                # ind.evaluate(lambda x: string_match("geva", x))
+                ind.evaluate(xor_fitness)
         print_individuals(individuals)
             
         # Perform selection, crossover, and mutation
@@ -242,7 +273,7 @@ def search_loop(max_generations, individuals, grammar):
 # Run program
 def main():
     # Read grammar
-    bnf_grammar = Grammar("grammars/letter.bnf")
+    bnf_grammar = Grammar("grammars/boolean.pybnf")
     # Create Individuals
     individuals = initialise_population(10)
     # Loop
