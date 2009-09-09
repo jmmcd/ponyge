@@ -73,17 +73,17 @@ def readBNFFile(file_name):
     return (rules, terminals, non_terminals, start_rule)          
 
 # Create fitness function
-def string_match(facit, output):
+def string_match(target, output):
     """Fitness function for matching a string. 
     Takes an output string and return fitness"""
     # Min length
-    length = min(len(facit), len(output))
+    length = min(len(target), len(output))
     # Start fitness
-    fitness = len(facit)
+    fitness = len(target)
     cnt = 0;
     while cnt < length:
         # If matching characters decrease fitness
-        if facit[cnt] == output[cnt]:
+        if target[cnt] == output[cnt]:
             fitness -= 1
         cnt += 1
     return fitness
@@ -164,7 +164,7 @@ def initialise_population(size):
 def print_individuals(individuals):
     """Print the data of the individuals"""
     for individual in individuals:
-        print individual
+        print(individual)
 
 # Int flip mutation
 def int_flip_mutation(individual, p_mut):
@@ -179,26 +179,68 @@ def int_flip_mutation(individual, p_mut):
     individual[2] = input
     return individual
 
+# Two selection methods: tournament and truncation
+def tournament_selection(population, tournament_size=3):
+    """Given an entire population, draw <tournament_size> competitors
+    randomly and return the best."""
+    competitors = random.sample(population, tournament_size)
+    return competitors.sort()[0]
+
+def truncation_selection(population, proportion):
+    """ Given an entire population, return the best <proportion> of
+    them."""
+    population.sort(reverse=True)
+    cutoff = int(len(population) * float(proportion))
+    return population[0:cutoff]
+
+# Crossover
+def onepoint_crossover(p, q):
+    """Given two individuals, create two children using one-point
+    crossover and return them."""
+    # Get the chromosomes
+    pc, qc = p[2], q[2]
+    # Uniformly generate crossover points
+    pt_p, pt_q = random.randint(0, len(pc)), random.randint(0, len(qc))
+    # Make new chromosomes by crossover: these slices perform copies
+    c = pc[:pt_p] + qc[pt_q:]
+    d = qc[:pt_q] + pc[pt_p:]
+    # Put the new chromosomes into new individuals
+    return [[-1, None, c], [-1, None, d]]
+
 # Loop 
 def search_loop(max_generations, individuals, grammar):
     """Loop over max generations"""
     generation = 0
     while generation < max_generations:
-        print "Gen:", generation
+        print("Gen:", generation)
+        # Perform the mapping for each individual
         for i in range(len(individuals)):
             ind = individuals[i]
             ind[1] = map(ind[2], grammar[0], grammar[3])
             if ind[1] != None:
                 ind[0] = string_match("geva", ind[1])
-            individuals[i] = int_flip_mutation(ind, 0.05)
         print_individuals(individuals)
+            
+        # Perform selection, crossover, and mutation
+        parents = truncation_selection(individuals, 0.5)
+        new_pop = []
+        while len(new_pop) < len(individuals):
+            two_parents = random.sample(parents, 2)
+            new_pop.extend(onepoint_crossover(*two_parents))
+        for i in range(len(new_pop)):
+            new_pop[i] = int_flip_mutation(new_pop[i], 0.05)
+        individuals = new_pop
         generation += 1
 
+
 # Run program
-# Read grammar
-bnf_grammar = ()
-bnf_grammar = readBNFFile("grammars/letter.bnf")
-# Create Individuals
-individuals = initialise_population(10)
-# Loop
-search_loop(2, individuals, bnf_grammar)
+def main():
+    # Read grammar
+    bnf_grammar = readBNFFile("grammars/letter.bnf")
+    # Create Individuals
+    individuals = initialise_population(10)
+    # Loop
+    search_loop(10, individuals, bnf_grammar)
+
+if __name__ == "__main__":
+    main()
