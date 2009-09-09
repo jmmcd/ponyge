@@ -69,7 +69,7 @@ def readBNFFile(file_name):
                 if not rules.has_key(lhs):
                     rules[lhs] = tmp_productions
                 else:
-                    print "Hmm lhs should be unique"
+                    print "Hmm, lhs should be unique"
     return (rules, terminals, non_terminals, start_rule)          
 
 # Create fitness function
@@ -90,7 +90,8 @@ def string_match(facit, output):
 
 # Create Initial Individual
 def create_individual(length):
-    """Create a GE 8 bit individual of the specified length and return"""
+    """Create a GE 8 bit individual of the specified length and
+    return"""
     #tuple fitness, output, input
     cnt = 0
     input = []
@@ -135,7 +136,7 @@ def map(input, rules, start_rule):
             # Read left to right, add the current productions to stack
             tmp_list = []
             tmp_choice = production_choices[current_production]
-            # Stupid python treats a lonely tuple as a list in a for loop
+            # Stupid python treats a lonely tuple as a list in a for-loop
             # so it loops over the elements in the tuple
             if len(tmp_choice) == 2 and (tmp_choice[1] == T or tmp_choice[1] == NT):
                 tmp_tuple = (tmp_choice[0], tmp_choice[1])
