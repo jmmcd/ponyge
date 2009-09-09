@@ -88,19 +88,25 @@ def string_match(target, output):
         cnt += 1
     return fitness
 
-# Create Initial Individual
-def create_individual(length):
-    """Create a GE 8 bit individual of the specified length and
-    return"""
-    #tuple fitness, output, input
-    cnt = 0
-    input = []
-    while cnt < length:
-        input.append(random.randint(0,127))
-        cnt += 1
-    individual = [-1,None,input]
-    return individual
+class Individual(object):
+    """A GE 8 bit individual"""
+    def __init__(self, genome, length=100):
+        if genome == None:
+            self.genome = [random.randint(0, 127) 
+                           for i in range(length)]
+        else:
+            self.genome = genome
+        self.fitness = -1
+        self.phenotype = None
 
+    def __str__(self):
+        return ("Individual: " + str(self.genome) + "; " + 
+                str(self.phenotype) + "; " + str(self.fitness))
+
+    def evaluate(self, fitness):
+        self.fitness = fitness(self.genome)
+
+        
 # Map individual
 def generate(input, rules, start_rule):
     """Map input via rules to output"""
@@ -156,7 +162,7 @@ def initialise_population(size):
     input_size = 10
     cnt = 0
     while cnt < size:
-        individuals.append(create_individual(input_size))
+        individuals.append(Individual(None))
         cnt += 1
     return individuals
 
@@ -170,13 +176,12 @@ def print_individuals(individuals):
 def int_flip_mutation(individual, p_mut):
     """Mutate the individual by randomly chosing a new int with 
     probability p_mut"""
-    input = individual[2]
+    input = individual.genome
     # Mutate the input
     for i in range(len(input)):
         # Check mutation probability
         if random.random() < p_mut:
             input[i] = random.randint(0,127)
-    individual[2] = input
     return individual
 
 # Two selection methods: tournament and truncation
@@ -198,14 +203,14 @@ def onepoint_crossover(p, q):
     """Given two individuals, create two children using one-point
     crossover and return them."""
     # Get the chromosomes
-    pc, qc = p[2], q[2]
+    pc, qc = p.genome, q.genome
     # Uniformly generate crossover points
     pt_p, pt_q = random.randint(0, len(pc)), random.randint(0, len(qc))
     # Make new chromosomes by crossover: these slices perform copies
     c = pc[:pt_p] + qc[pt_q:]
     d = qc[:pt_q] + pc[pt_p:]
     # Put the new chromosomes into new individuals
-    return [[-1, None, c], [-1, None, d]]
+    return [Individual(c), Individual(d)]
 
 # Loop 
 def search_loop(max_generations, individuals, grammar):
@@ -216,9 +221,9 @@ def search_loop(max_generations, individuals, grammar):
         # Perform the mapping for each individual
         for i in range(len(individuals)):
             ind = individuals[i]
-            ind[1] = generate(ind[2], grammar[0], grammar[3])
-            if ind[1] != None:
-                ind[0] = string_match("geva", ind[1])
+            ind.phenotype = generate(ind.genome, grammar[0], grammar[3])
+            if ind.phenotype != None:
+                ind.evaluate(lambda x: string_match("geva", x))
         print_individuals(individuals)
             
         # Perform selection, crossover, and mutation
