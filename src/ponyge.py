@@ -118,6 +118,7 @@ class Grammar(object):
                 tmp_choice = production_choices[current_production]
                 # Stupid python treats a lonely tuple as a list in a for-loop
                 # so it loops over the elements in the tuple
+                # TODO make sure all the productions are lists
                 if len(tmp_choice) == 2 and (tmp_choice[1] == self.T or tmp_choice[1] == self.NT):
                     tmp_tuple = (tmp_choice[0], tmp_choice[1])
                     tmp_list.append(tmp_tuple)
@@ -153,11 +154,11 @@ def string_match(target, output):
     """Fitness function for matching a string.  Takes an output string
     and return fitness. Penalises output that is not the same length
     as the target"""
-    # Start fitness, penalise to long strings
+    #Initial fitness, penalise too long strings
     fitness = max(len(target), len(output))
-    for cnt in range(min(len(target), len(output))):
-        # If matching characters decrease fitness
-        if target[cnt] == output[cnt]:
+    for (t,o) in zip(target, output):
+        # If target is matching output decrease fitness
+        if t == o:
             fitness -= 1
 
     return fitness
@@ -176,15 +177,14 @@ def xor_fitness(candidate):
 
 class Individual(object):
     """A GE 8 bit individual"""
-    def __init__(self, genome, length=100, codon_size=127):
+    def __init__(self, genome, length=100):
         if genome == None:
-            self.genome = [random.randint(0, codon_size) 
+            self.genome = [random.randint(0, CODON_SIZE) 
                            for i in range(length)]
         else:
             self.genome = genome
         self.fitness = -1
         self.phenotype = None
-        self.codon_size = codon_size
 
     def __str__(self):
         return ("Individual: " + 
@@ -217,7 +217,7 @@ def int_flip_mutation(individual, p_mut):
     for i in range(len(input)):
         # Check mutation probability
         if random.random() < p_mut:
-            input[i] = random.randint(0,individual.codon_size)
+            input[i] = random.randint(0,CODON_SIZE)
     return individual
 
 # Two selection methods: tournament and truncation
@@ -275,6 +275,8 @@ def search_loop(max_generations, individuals, grammar):
             new_pop[i] = int_flip_mutation(new_pop[i], 0.05)
         individuals = new_pop
 
+#Codon size used for the individuals
+CODON_SIZE = 127 
 # Run program
 def main():
     # Read grammar
