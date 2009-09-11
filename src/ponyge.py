@@ -4,6 +4,7 @@
 # Copyright (c) 2009 Erik Hemberg and James McDermott
 # Hereby licensed under the GNU GPL v3.
 
+
 import sys
 import re
 import random
@@ -24,6 +25,10 @@ class Grammar(object):
     # Read Grammar file
     def readBNFFile(self, file_name):
         """Read a grammar file in BNF format and return the rules"""
+        NON_TERMINAL_PATTERN = "(<.+?>)"
+        RULE_SEPARATOR = "::="
+        PRODUCTION_SEPARATOR = "|"
+
         infile = open(file_name, 'r')
         self.rules = {}
         # Non-Terminal set
@@ -35,37 +40,38 @@ class Grammar(object):
         for line in infile:
             # Not read comment lines
             if not line.startswith("#"):
-                # Split rules
-                # Everything must be on one line
-                if line.find("::="):
-                    lhs, productions = line.split("::=")
+                # Split rules. Everything must be on one line
+                #TODO Avoid everything on one line
+                #TODO find and match instead of explicit split
+                if line.find(RULE_SEPARATOR):
+                    lhs, productions = line.split(RULE_SEPARATOR)
                     lhs = lhs.strip()
                     if self.start_rule == None:
-                        # Need to make sure it is NT
+                        #TODO Need to make sure it is NT
                         self.start_rule = (lhs, self.NT)
                     self.non_terminals.add(lhs)
                     # Split productions
-                    productions = productions.split("|")
+                    productions = productions.split(PRODUCTION_SEPARATOR)
                     productions = [production.strip() for production in productions]
                     # Find terminals
                     tmp_productions = []
                     for production in productions:
                         # <.+?> Non greedy match of anything between brackets
-                        non_terminal_pattern = "(<.+?>)"
-                        found = re.search(non_terminal_pattern, production)
+                        found = re.search(NON_TERMINAL_PATTERN, production)
                         if not found:
                             self.terminals.add(production)
-                            symbol = (production, "T")
+                            symbol = (production, self.T)
                             tmp_production = symbol
                         else:
                             # Match non terminal or terminal pattern
+                            # TODO does this handle quoted NT symbols
                             pattern = "<.+?>|[^<>]*";
                             # Find Non-Terminals
                             found = re.findall(pattern, production)
                             tmp_production = []
                             for f in found:
                                 if f != '':
-                                    nt = re.search(non_terminal_pattern, f)
+                                    nt = re.search(NON_TERMINAL_PATTERN, f)
                                     if not nt:
                                         symbol = (f, self.T)
                                     else:
@@ -76,16 +82,14 @@ class Grammar(object):
                     if not self.rules.has_key(lhs):
                         self.rules[lhs] = tmp_productions
                     else:
-                        print "Hmm, lhs should be unique"
+                        print "WARNING:",__name__, "readBNFFile",  lhs, "should be unique"
 
         
     # Map individual
-    def generate(self, input):
+    def generate(self, input, max_wraps=2):
         """Map input via rules to output"""
         cnt = 0
         wraps = 0
-        max_wraps = 2
-        nt_pattern = "(<.+?>)";
         output = []
         # Stack of symbols to expand
         unexpanded_symbols = []
@@ -123,9 +127,12 @@ class Grammar(object):
                 for e in unexpanded_symbols:
                     tmp_list.append(e)
                 unexpanded_symbols = tmp_list
+
         if len(unexpanded_symbols) > 0:
             return None
+
         output = "".join(output)
+        #Create correct python syntax
         if self.python_mode:
             counter = 0
             for char in output:
@@ -138,22 +145,21 @@ class Grammar(object):
                     output = output.replace(char, tabstr, 1)
             output = "\n".join([line for line in output.split("\n") 
                                 if line.strip() != ""])
+
         return output
 
 # String-match fitness function
 def string_match(target, output):
-    """Fitness function for matching a string. 
-    Takes an output string and return fitness"""
-    # Min length
-    length = min(len(target), len(output))
-    # Start fitness
-    fitness = len(target)
-    cnt = 0;
-    while cnt < length:
+    """Fitness function for matching a string.  Takes an output string
+    and return fitness. Penalises output that is not the same length
+    as the target"""
+    # Start fitness, penalise to long strings
+    fitness = max(len(target), len(output))
+    for cnt in range(min(len(target), len(output))):
         # If matching characters decrease fitness
         if target[cnt] == output[cnt]:
             fitness -= 1
-        cnt += 1
+
     return fitness
 
 # XOR fitness function with python evaluation
@@ -170,14 +176,15 @@ def xor_fitness(candidate):
 
 class Individual(object):
     """A GE 8 bit individual"""
-    def __init__(self, genome, length=100):
+    def __init__(self, genome, length=100, codon_size=127):
         if genome == None:
-            self.genome = [random.randint(0, 127) 
+            self.genome = [random.randint(0, codon_size) 
                            for i in range(length)]
         else:
             self.genome = genome
         self.fitness = -1
         self.phenotype = None
+        self.codon_size = codon_size
 
     def __str__(self):
         return ("Individual: " + 
@@ -187,14 +194,12 @@ class Individual(object):
         self.fitness = fitness(self.phenotype)
 
 # Initialize population
-def initialise_population(size):
+def initialise_population(size=10):
     """Create a popultaion of size and return"""
     individuals = []
-    input_size = 10
-    cnt = 0
-    while cnt < size:
+    for cnt in range(size):
         individuals.append(Individual(None))
-        cnt += 1
+
     return individuals
 
 # Write data
@@ -212,7 +217,7 @@ def int_flip_mutation(individual, p_mut):
     for i in range(len(input)):
         # Check mutation probability
         if random.random() < p_mut:
-            input[i] = random.randint(0,127)
+            input[i] = random.randint(0,individual.codon_size)
     return individual
 
 # Two selection methods: tournament and truncation
@@ -246,8 +251,7 @@ def onepoint_crossover(p, q):
 # Loop 
 def search_loop(max_generations, individuals, grammar):
     """Loop over max generations"""
-    generation = 0
-    while generation < max_generations:
+    for generation in range(max_generations):
         print("Gen:", generation)
         # Perform the mapping for each individual
         for i in range(len(individuals)):
@@ -256,19 +260,20 @@ def search_loop(max_generations, individuals, grammar):
             if ind.phenotype != None:
                 # ind.evaluate(lambda x: string_match("geva", x))
                 ind.evaluate(xor_fitness)
+
+        #TODO sort individuals before printing
         print_individuals(individuals)
             
         # Perform selection, crossover, and mutation
         parents = truncation_selection(individuals, 0.5)
         new_pop = []
+        #TODO write generational and steady state, and elites
         while len(new_pop) < len(individuals):
             two_parents = random.sample(parents, 2)
             new_pop.extend(onepoint_crossover(*two_parents))
         for i in range(len(new_pop)):
             new_pop[i] = int_flip_mutation(new_pop[i], 0.05)
         individuals = new_pop
-        generation += 1
-
 
 # Run program
 def main():
