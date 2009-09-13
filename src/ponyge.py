@@ -145,14 +145,14 @@ def xor_fitness(candidate):
 
 class Individual(object):
     """A GE individual"""
-    def __init__(self, genome, length=100):
+    def __init__(self, genome, fitness=None, phenotype=None, length=100):
         if genome == None:
             self.genome = [random.randint(0, CODON_SIZE) 
                            for i in range(length)]
         else:
             self.genome = genome
-        self.fitness = None
-        self.phenotype = None
+        self.fitness = fitness
+        self.phenotype = phenotype
     
     def __cmp__(self, other):
         #-1*cmp for maximization
@@ -186,12 +186,9 @@ def print_individuals(individuals):
 def int_flip_mutation(individual, p_mut):
     """Mutate the individual by randomly chosing a new int with 
     probability p_mut"""
-    input = individual.genome
-    # Mutate the input
-    for i in range(len(input)):
-        # Check mutation probability
+    for i in range(len(individual.genome)):
         if random.random() < p_mut:
-            input[i] = random.randint(0,CODON_SIZE)
+            individual.genome[i] = random.randint(0,CODON_SIZE)
     return individual
 
 # Two selection methods: tournament and truncation
@@ -231,11 +228,9 @@ def evaluate_fitness(individuals, grammar):
             #individual.evaluate(xor_fitness)
 
 def generational_replacement(new_pop, individuals):
-    #TODO make pythonic Copy constructor?
+    #TODO make pythonic map()? not loop
     for ind in individuals[:ELITE_SIZE]:
-        new_pop.append(Individual(ind.genome))
-        new_pop[-1].fitness = ind.fitness
-        new_pop[-1].phenotype = ind.phenotype
+        new_pop.append(Individual(ind.genome, ind.fitness, ind.phenotype))
     new_pop.sort()
     return new_pop[:GENERATION_SIZE]
 
@@ -247,6 +242,7 @@ def steady_state_replacement(new_pop, individuals):
 def search_loop(max_generations, individuals, grammar):
     """Loop over max generations"""
     #Evaluate initial population
+    #TODO look like pseudo code
     #TODO handle initialisation nicely
     print("Gen:", -1)
     evaluate_fitness(individuals, grammar)
@@ -283,6 +279,9 @@ def search_loop(max_generations, individuals, grammar):
         
 
 #Codon size used for the individuals
+#TODO can the functions be structured in a more sensible manner to
+#make the file more readable
+#TODO initial size parameter
 CODON_SIZE = 127 
 ELITE_SIZE = 1
 POPULATION_SIZE = 100
@@ -301,6 +300,7 @@ def main():
     # Create Individuals
     individuals = initialise_population(POPULATION_SIZE)
     # Loop
+    #TODO Look like functioncall, with all paraeters in one?
     search_loop(GENERATIONS, individuals, bnf_grammar)
 
 if __name__ == "__main__":
