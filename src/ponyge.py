@@ -10,10 +10,8 @@ import re
 import random
 
 class Grammar(object):
-    # Non Terminal 
-    NT = "NT"
-    # Terminal 
-    T = "T"
+    NT = "NT" # Non Terminal 
+    T = "T" # Terminal 
 
     def __init__(self, file_name):
         if file_name.endswith("pybnf"):
@@ -22,113 +20,85 @@ class Grammar(object):
             self.python_mode = False
         self.readBNFFile(file_name)
 
-    # Read Grammar file
     def readBNFFile(self, file_name):
-        """Read a grammar file in BNF format and return the rules"""
-        NON_TERMINAL_PATTERN = "(<.+?>)"
+        """Read a grammar file in BNF format"""
+        # <.+?> Non greedy match of anything between brackets
+        NON_TERMINAL_PATTERN = "(<.+?>)" 
         RULE_SEPARATOR = "::="
         PRODUCTION_SEPARATOR = "|"
 
-        infile = open(file_name, 'r')
         self.rules = {}
-        # Non-Terminal set
-        self.non_terminals = set()
-        # Terminal set
-        self.terminals = set()
+        self.non_terminals, self.terminals = set(), set()
         self.start_rule = None
         # Read the grammar file
-        for line in infile:
-            # Not read comment lines
+        for line in open(file_name, 'r'):
             if not line.startswith("#"):
                 # Split rules. Everything must be on one line
                 #TODO Avoid everything on one line
-                #TODO find and match instead of explicit split
                 if line.find(RULE_SEPARATOR):
                     lhs, productions = line.split(RULE_SEPARATOR)
                     lhs = lhs.strip()
-                    if self.start_rule == None:
-                        #TODO Need to make sure it is NT
-                        self.start_rule = (lhs, self.NT)
+                    if not re.search(NON_TERMINAL_PATTERN, lhs):
+                        #TODO correct error type?
+                        raise ValueError("lhs is not a NT:",lhs)
                     self.non_terminals.add(lhs)
-                    # Split productions
-                    productions = productions.split(PRODUCTION_SEPARATOR)
-                    productions = [production.strip() for production in productions]
+                    if self.start_rule == None:
+                        self.start_rule = (lhs, self.NT)
                     # Find terminals
                     tmp_productions = []
-                    for production in productions:
-                        # <.+?> Non greedy match of anything between brackets
-                        found = re.search(NON_TERMINAL_PATTERN, production)
-                        if not found:
+                    for production in [production.strip() 
+                                       for production in productions.split(PRODUCTION_SEPARATOR)]:
+                        tmp_production = []
+                        if not re.search(NON_TERMINAL_PATTERN, production):
                             self.terminals.add(production)
-                            symbol = (production, self.T)
-                            tmp_production = symbol
+                            tmp_production.append((production, self.T))
                         else:
                             # Match non terminal or terminal pattern
                             # TODO does this handle quoted NT symbols
-                            pattern = "<.+?>|[^<>]*";
-                            # Find Non-Terminals
-                            found = re.findall(pattern, production)
-                            tmp_production = []
-                            for f in found:
-                                if f != '':
-                                    nt = re.search(NON_TERMINAL_PATTERN, f)
-                                    if not nt:
-                                        symbol = (f, self.T)
+                            for value in re.findall("<.+?>|[^<>]*", production):
+                                if value != '':
+                                    if not re.search(NON_TERMINAL_PATTERN, value): 
+                                        symbol = (value, self.T)
                                     else:
-                                        symbol = (f, self.NT)
+                                        symbol = (value, self.NT)
                                     tmp_production.append(symbol)
                         tmp_productions.append(tmp_production)
                     # Create a rule
                     if not self.rules.has_key(lhs):
                         self.rules[lhs] = tmp_productions
                     else:
-                        print "WARNING:",__name__, "readBNFFile",  lhs, "should be unique"
-
+                        raise ValueError("lhs should be unique", lhs)
+                else:
+                    raise ValueError("Each rule must be on one line")
         
-    # Map individual
     def generate(self, input, max_wraps=2):
         """Map input via rules to output"""
-        cnt = 0
+        used_input = 0
         wraps = 0
         output = []
-        # Stack of symbols to expand
-        unexpanded_symbols = []
-        unexpanded_symbols.append(self.start_rule)
-        # Should I write it recursivly??!! (Good to test speed difference)
-        while (cnt < len(input)) and (wraps < max_wraps) and (len(unexpanded_symbols) > 0):
+
+        unexpanded_symbols = [self.start_rule]
+        while (wraps < max_wraps) and (len(unexpanded_symbols) > 0):
             # Wrap
-            if cnt == len(input):
+            if used_input % len(input) == 0 and used_input > 0:
                 wraps += 1
-                cnt = 0
-            # Get a prodcution
+            # Expand a production
             current_symbol = unexpanded_symbols.pop(0)
-            # Get output if it is a terminal        
+            # Set output if it is a terminal        
             if current_symbol[1] != self.NT:
                 output.append(current_symbol[0])
             else:
                 # Get production choices
                 production_choices = self.rules[current_symbol[0]]
                 # Select a production
-                current_production = input[cnt] % len(production_choices)
-                # Use input if there was more then 1 choice
+                current_production = input[used_input % len(input)] % len(production_choices)
+                # Use an input if there was more then 1 choice
                 if len(production_choices) > 1:
-                    cnt += 1
-                # Read left to right, add the current productions to stack
-                tmp_list = []
-                tmp_choice = production_choices[current_production]
-                # Stupid python treats a lonely tuple as a list in a for-loop
-                # so it loops over the elements in the tuple
-                # TODO make sure all the productions are lists
-                if len(tmp_choice) == 2 and (tmp_choice[1] == self.T or tmp_choice[1] == self.NT):
-                    tmp_tuple = (tmp_choice[0], tmp_choice[1])
-                    tmp_list.append(tmp_tuple)
-                else:
-                    for e in tmp_choice:
-                        tmp_list.append(e)
-                for e in unexpanded_symbols:
-                    tmp_list.append(e)
-                unexpanded_symbols = tmp_list
+                    used_input += 1
+                # Derviation order is left to right(depth-first)
+                unexpanded_symbols = production_choices[current_production] + unexpanded_symbols
 
+        #Not completly expanded
         if len(unexpanded_symbols) > 0:
             return None
 
@@ -154,13 +124,11 @@ def string_match(target, output):
     """Fitness function for matching a string.  Takes an output string
     and return fitness. Penalises output that is not the same length
     as the target"""
-    #Initial fitness, penalise too long strings
     fitness = max(len(target), len(output))
+    #Loops as long as the min(target, output) 
     for (t,o) in zip(target, output):
-        # If target is matching output decrease fitness
         if t == o:
             fitness -= 1
-
     return fitness
 
 # XOR fitness function with python evaluation
@@ -176,15 +144,21 @@ def xor_fitness(candidate):
     return fitness
 
 class Individual(object):
-    """A GE 8 bit individual"""
+    """A GE individual"""
     def __init__(self, genome, length=100):
         if genome == None:
             self.genome = [random.randint(0, CODON_SIZE) 
                            for i in range(length)]
         else:
             self.genome = genome
-        self.fitness = -1
+        self.fitness = None
         self.phenotype = None
+    
+    def __cmp__(self, other):
+        #-1*cmp for maximization
+        #TODO variable for minimization or maximization
+        #TODO None seems to be lowest in minimization
+        return cmp(self.fitness, other.fitness)
 
     def __str__(self):
         return ("Individual: " + 
@@ -237,54 +211,97 @@ def truncation_selection(population, proportion):
 # Crossover
 def onepoint_crossover(p, q):
     """Given two individuals, create two children using one-point
-    crossover and return them."""
+    crossover and return them."""    
     # Get the chromosomes
     pc, qc = p.genome, q.genome
     # Uniformly generate crossover points
-    pt_p, pt_q = random.randint(0, len(pc)), random.randint(0, len(qc))
+    pt_p, pt_q = random.randint(1, len(pc)), random.randint(1, len(qc))
     # Make new chromosomes by crossover: these slices perform copies
     c = pc[:pt_p] + qc[pt_q:]
     d = qc[:pt_q] + pc[pt_p:]
     # Put the new chromosomes into new individuals
     return [Individual(c), Individual(d)]
 
+def evaluate_fitness(individuals, grammar):
+    # Perform the mapping for each individual
+    for individual in individuals:
+        individual.phenotype = grammar.generate(individual.genome)
+        if individual.phenotype != None:
+            individual.evaluate(lambda x: string_match("geva", x))
+            #individual.evaluate(xor_fitness)
+
+def generational_replacement(new_pop, individuals):
+    #TODO make pythonic Copy constructor?
+    for ind in individuals[:ELITE_SIZE]:
+        new_pop.append(Individual(ind.genome))
+        new_pop[-1].fitness = ind.fitness
+        new_pop[-1].phenotype = ind.phenotype
+    new_pop.sort()
+    return new_pop[:GENERATION_SIZE]
+
+def steady_state_replacement(new_pop, individuals):
+    individuals[-1] = max(new_pop + individuals[-1:])
+    return individuals
+
 # Loop 
 def search_loop(max_generations, individuals, grammar):
     """Loop over max generations"""
+    #Evaluate initial population
+    #TODO handle initialisation nicely
+    print("Gen:", -1)
+    evaluate_fitness(individuals, grammar)
+    individuals.sort()
+    #print_individuals(individuals)
+    # Perform selection, crossover, mutation, evaluation and replacement
     for generation in range(max_generations):
         print("Gen:", generation)
-        # Perform the mapping for each individual
-        for i in range(len(individuals)):
-            ind = individuals[i]
-            ind.phenotype = grammar.generate(ind.genome)
-            if ind.phenotype != None:
-                # ind.evaluate(lambda x: string_match("geva", x))
-                ind.evaluate(xor_fitness)
 
-        #TODO sort individuals before printing
-        print_individuals(individuals)
-            
-        # Perform selection, crossover, and mutation
         parents = truncation_selection(individuals, 0.5)
+
         new_pop = []
-        #TODO write generational and steady state, and elites
-        while len(new_pop) < len(individuals):
+        while len(new_pop) < GENERATION_SIZE:
             two_parents = random.sample(parents, 2)
-            new_pop.extend(onepoint_crossover(*two_parents))
+            if random.random() < CROSSOVER_PROBABILITY:
+                two_parents = onepoint_crossover(*two_parents)
+            else:
+                #TODO make pythonic
+                for i in range(len(two_parents)):
+                    two_parents[i] = Individual(two_parents[i].genome)
+            new_pop.extend(two_parents)
+
         for i in range(len(new_pop)):
-            new_pop[i] = int_flip_mutation(new_pop[i], 0.05)
-        individuals = new_pop
+            new_pop[i] = int_flip_mutation(new_pop[i], MUTATION_PROBABILITY)
+        
+        evaluate_fitness(new_pop, grammar)
+
+        individuals.sort()
+        individuals = generational_replacement(new_pop, individuals)
+#        individuals = steady_state_replacement(new_pop, individuals)
+
+#        print_individuals(individuals)
+        print individuals[0]
+        
 
 #Codon size used for the individuals
 CODON_SIZE = 127 
+ELITE_SIZE = 1
+POPULATION_SIZE = 100
+GENERATION_SIZE = 100
+#GENERATION_SIZE = 2
+#TODO should we count fitness evaluations
+GENERATIONS = 10
+#GRAMMAR_FILE = "grammars/boolean.pybnf"
+GRAMMAR_FILE = "grammars/letter.bnf"
+MUTATION_PROBABILITY = 0.05
+CROSSOVER_PROBABILITY = 0.9
 # Run program
 def main():
     # Read grammar
-    bnf_grammar = Grammar("grammars/boolean.pybnf")
+    bnf_grammar = Grammar(GRAMMAR_FILE)
     # Create Individuals
-    individuals = initialise_population(10)
+    individuals = initialise_population(POPULATION_SIZE)
     # Loop
-    search_loop(10, individuals, bnf_grammar)
+    search_loop(GENERATIONS, individuals, bnf_grammar)
 
 if __name__ == "__main__":
     main()
