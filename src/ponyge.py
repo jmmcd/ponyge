@@ -88,7 +88,6 @@ class Grammar(object):
             if current_symbol[1] != self.NT:
                 output.append(current_symbol[0])
             else:
-                # Get production choices
                 production_choices = self.rules[current_symbol[0]]
                 # Select a production
                 current_production = input[used_input % len(input)] % len(production_choices)
@@ -183,11 +182,11 @@ def print_individuals(individuals):
         print(individual)
 
 # Int flip mutation
-def int_flip_mutation(individual, p_mut):
+def int_flip_mutation(individual):
     """Mutate the individual by randomly chosing a new int with 
     probability p_mut"""
     for i in range(len(individual.genome)):
-        if random.random() < p_mut:
+        if random.random() < MUTATION_PROBABILITY:
             individual.genome[i] = random.randint(0,CODON_SIZE)
     return individual
 
@@ -198,7 +197,7 @@ def tournament_selection(population, tournament_size=3):
     competitors = random.sample(population, tournament_size)
     return competitors.sort()[0]
 
-def truncation_selection(population, proportion):
+def truncation_selection(population, proportion=0.5):
     """ Given an entire population, return the best <proportion> of
     them."""
     population.sort(reverse=True)
@@ -214,21 +213,22 @@ def onepoint_crossover(p, q):
     # Uniformly generate crossover points
     pt_p, pt_q = random.randint(1, len(pc)), random.randint(1, len(qc))
     # Make new chromosomes by crossover: these slices perform copies
-    c = pc[:pt_p] + qc[pt_q:]
-    d = qc[:pt_q] + pc[pt_p:]
+    if random.random() < CROSSOVER_PROBABILITY:
+        c = pc[:pt_p] + qc[pt_q:]
+        d = qc[:pt_q] + pc[pt_p:]
+    else:
+        c, d = pc, qc
     # Put the new chromosomes into new individuals
     return [Individual(c), Individual(d)]
 
-def evaluate_fitness(individuals, grammar):
+def evaluate_fitness(individuals, grammar, fitness_function):
     # Perform the mapping for each individual
     for individual in individuals:
         individual.phenotype = grammar.generate(individual.genome)
         if individual.phenotype != None:
-            individual.evaluate(lambda x: string_match("geva", x))
-            #individual.evaluate(xor_fitness)
+            individual.evaluate(fitness_function)
 
 def generational_replacement(new_pop, individuals):
-    #TODO make pythonic map()? not loop
     for ind in individuals[:ELITE_SIZE]:
         new_pop.append(Individual(ind.genome, ind.fitness, ind.phenotype))
     new_pop.sort()
@@ -239,49 +239,35 @@ def steady_state_replacement(new_pop, individuals):
     return individuals
 
 # Loop 
-def search_loop(max_generations, individuals, grammar):
+def search_loop(max_generations, individuals, grammar, replacement, selection, fitness_function):
     """Loop over max generations"""
     #Evaluate initial population
-    #TODO look like pseudo code
     #TODO handle initialisation nicely
     print("Gen:", -1)
-    evaluate_fitness(individuals, grammar)
+    evaluate_fitness(individuals, grammar, fitness_function)
     individuals.sort()
     #print_individuals(individuals)
-    # Perform selection, crossover, mutation, evaluation and replacement
     for generation in range(max_generations):
         print("Gen:", generation)
 
-        parents = truncation_selection(individuals, 0.5)
+        parents = selection(individuals, 0.5)
 
         new_pop = []
         while len(new_pop) < GENERATION_SIZE:
-            two_parents = random.sample(parents, 2)
-            if random.random() < CROSSOVER_PROBABILITY:
-                two_parents = onepoint_crossover(*two_parents)
-            else:
-                #TODO make pythonic
-                for i in range(len(two_parents)):
-                    two_parents[i] = Individual(two_parents[i].genome)
-            new_pop.extend(two_parents)
+            new_pop.extend(onepoint_crossover(*random.sample(parents, 2)))
 
-        for i in range(len(new_pop)):
-            new_pop[i] = int_flip_mutation(new_pop[i], MUTATION_PROBABILITY)
+        new_pop = map(int_flip_mutation, new_pop)
         
-        evaluate_fitness(new_pop, grammar)
+        evaluate_fitness(new_pop, grammar, fitness_function)
 
         individuals.sort()
-        individuals = generational_replacement(new_pop, individuals)
-#        individuals = steady_state_replacement(new_pop, individuals)
+        individuals = replacement(new_pop, individuals)
 
 #        print_individuals(individuals)
         print individuals[0]
         
 
-#Codon size used for the individuals
 #TODO can the functions be structured in a more sensible manner to
-#make the file more readable
-#TODO initial size parameter
 CODON_SIZE = 127 
 ELITE_SIZE = 1
 POPULATION_SIZE = 100
@@ -293,6 +279,7 @@ GENERATIONS = 10
 GRAMMAR_FILE = "grammars/letter.bnf"
 MUTATION_PROBABILITY = 0.05
 CROSSOVER_PROBABILITY = 0.9
+            #individual.evaluate(xor_fitness)
 # Run program
 def main():
     # Read grammar
@@ -300,8 +287,7 @@ def main():
     # Create Individuals
     individuals = initialise_population(POPULATION_SIZE)
     # Loop
-    #TODO Look like functioncall, with all paraeters in one?
-    search_loop(GENERATIONS, individuals, bnf_grammar)
+    search_loop(GENERATIONS, individuals, bnf_grammar, generational_replacement, truncation_selection, lambda x: string_match("geva", x))
 
 if __name__ == "__main__":
     main()
