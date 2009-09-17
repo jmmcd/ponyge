@@ -5,9 +5,7 @@
 # Hereby licensed under the GNU GPL v3.
 
 
-import sys
-import re
-import random
+import sys, copy, re, random
 
 class Grammar(object):
     NT = "NT" # Non Terminal 
@@ -144,20 +142,19 @@ def xor_fitness(candidate):
 
 class Individual(object):
     """A GE individual"""
-    def __init__(self, genome, fitness=None, phenotype=None, length=100):
+    def __init__(self, genome, length=100):
         if genome == None:
             self.genome = [random.randint(0, CODON_SIZE) 
                            for i in range(length)]
         else:
             self.genome = genome
-        self.fitness = fitness
-        self.phenotype = phenotype
+        self.fitness = DEFAULT_FITNESS
+        self.phenotype = None
     
     def __cmp__(self, other):
         #-1*cmp for maximization
-        #TODO variable for minimization or maximization
-        #TODO None seems to be lowest in minimization
-        return cmp(self.fitness, other.fitness)
+        #TODO better sign function
+        return cmp(DEFAULT_FITNESS,0)*cmp(self.fitness, other.fitness)
 
     def __str__(self):
         return ("Individual: " + 
@@ -174,6 +171,10 @@ def initialise_population(size=10):
         individuals.append(Individual(None))
 
     return individuals
+
+def print_stats(generation, individuals):
+    print "G:",generation, "FE:", (GENERATION_SIZE*generation),individuals[0]
+    #print_individuals(individuals)
 
 # Write data
 def print_individuals(individuals):
@@ -194,8 +195,12 @@ def int_flip_mutation(individual):
 def tournament_selection(population, tournament_size=3):
     """Given an entire population, draw <tournament_size> competitors
     randomly and return the best."""
-    competitors = random.sample(population, tournament_size)
-    return competitors.sort()[0]
+    winners = []
+    while len(winners) < GENERATION_SIZE:
+        competitors = random.sample(population, tournament_size)
+        competitors.sort()
+        winners.append(competitors[0])
+    return winners
 
 def truncation_selection(population, proportion=0.5):
     """ Given an entire population, return the best <proportion> of
@@ -230,7 +235,7 @@ def evaluate_fitness(individuals, grammar, fitness_function):
 
 def generational_replacement(new_pop, individuals):
     for ind in individuals[:ELITE_SIZE]:
-        new_pop.append(Individual(ind.genome, ind.fitness, ind.phenotype))
+        new_pop.append(copy.copy(ind))
     new_pop.sort()
     return new_pop[:GENERATION_SIZE]
 
@@ -241,31 +246,25 @@ def steady_state_replacement(new_pop, individuals):
 # Loop 
 def search_loop(max_generations, individuals, grammar, replacement, selection, fitness_function):
     """Loop over max generations"""
-    #Evaluate initial population
-    #TODO handle initialisation nicely
-    print("Gen:", -1)
+    #Evaluate initial population (-1 is initial generation)
     evaluate_fitness(individuals, grammar, fitness_function)
     individuals.sort()
-    #print_individuals(individuals)
-    for generation in range(max_generations):
-        print("Gen:", generation)
-
-        parents = selection(individuals, 0.5)
-
+    print_stats(1,individuals)
+    for generation in range(2,(max_generations+1)):
+        #Select parents
+        parents = selection(individuals)
+        #Crossover parents and add to the new population
         new_pop = []
         while len(new_pop) < GENERATION_SIZE:
             new_pop.extend(onepoint_crossover(*random.sample(parents, 2)))
-
+        #Mutate the new population
         new_pop = map(int_flip_mutation, new_pop)
-        
+        #Evaluate the fitness of the new population
         evaluate_fitness(new_pop, grammar, fitness_function)
-
+        #Replace the sorted individuals with the new populations
         individuals.sort()
         individuals = replacement(new_pop, individuals)
-
-#        print_individuals(individuals)
-        print individuals[0]
-        
+        print_stats(generation, individuals)
 
 #TODO can the functions be structured in a more sensible manner to
 CODON_SIZE = 127 
@@ -273,12 +272,13 @@ ELITE_SIZE = 1
 POPULATION_SIZE = 100
 GENERATION_SIZE = 100
 #GENERATION_SIZE = 2
-#TODO should we count fitness evaluations
-GENERATIONS = 10
+GENERATIONS = 30
 #GRAMMAR_FILE = "grammars/boolean.pybnf"
 GRAMMAR_FILE = "grammars/letter.bnf"
-MUTATION_PROBABILITY = 0.05
-CROSSOVER_PROBABILITY = 0.9
+MUTATION_PROBABILITY = 0.1
+CROSSOVER_PROBABILITY = 0.7
+#TODO should not fitness function decied the default (or max fitness)
+DEFAULT_FITNESS = sys.maxint
             #individual.evaluate(xor_fitness)
 # Run program
 def main():
@@ -287,7 +287,7 @@ def main():
     # Create Individuals
     individuals = initialise_population(POPULATION_SIZE)
     # Loop
-    search_loop(GENERATIONS, individuals, bnf_grammar, generational_replacement, truncation_selection, lambda x: string_match("geva", x))
+    search_loop(GENERATIONS, individuals, bnf_grammar, generational_replacement, tournament_selection, lambda x: string_match("geva", x))
 
 if __name__ == "__main__":
     main()
