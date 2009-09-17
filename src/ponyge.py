@@ -116,7 +116,6 @@ class Grammar(object):
 
         return output
 
-# String-match fitness function
 def string_match(target, output):
     """Fitness function for matching a string.  Takes an output string
     and return fitness. Penalises output that is not the same length
@@ -128,8 +127,8 @@ def string_match(target, output):
             fitness -= 1
     return fitness
 
-# XOR fitness function with python evaluation
 def xor_fitness(candidate):
+    """XOR fitness function with python evaluation"""
     def xor(x, y):
         return (x and not y) or (y and not x)
     f = eval(candidate)
@@ -163,26 +162,19 @@ class Individual(object):
     def evaluate(self, fitness):
         self.fitness = fitness(self.phenotype)
 
-# Initialize population
 def initialise_population(size=10):
     """Create a popultaion of size and return"""
-    individuals = []
-    for cnt in range(size):
-        individuals.append(Individual(None))
-
-    return individuals
+    return [Individual(None) for cnt in range(size)]
 
 def print_stats(generation, individuals):
     print "G:",generation, "FE:", (GENERATION_SIZE*generation),individuals[0]
     #print_individuals(individuals)
 
-# Write data
 def print_individuals(individuals):
     """Print the data of the individuals"""
     for individual in individuals:
         print(individual)
 
-# Int flip mutation
 def int_flip_mutation(individual):
     """Mutate the individual by randomly chosing a new int with 
     probability p_mut"""
@@ -209,7 +201,6 @@ def truncation_selection(population, proportion=0.5):
     cutoff = int(len(population) * float(proportion))
     return population[0:cutoff]
 
-# Crossover
 def onepoint_crossover(p, q):
     """Given two individuals, create two children using one-point
     crossover and return them."""    
@@ -240,10 +231,10 @@ def generational_replacement(new_pop, individuals):
     return new_pop[:GENERATION_SIZE]
 
 def steady_state_replacement(new_pop, individuals):
+    individuals.sort()
     individuals[-1] = max(new_pop + individuals[-1:])
     return individuals
 
-# Loop 
 def search_loop(max_generations, individuals, grammar, replacement, selection, fitness_function):
     """Loop over max generations"""
     #Evaluate initial population (-1 is initial generation)
@@ -262,7 +253,6 @@ def search_loop(max_generations, individuals, grammar, replacement, selection, f
         #Evaluate the fitness of the new population
         evaluate_fitness(new_pop, grammar, fitness_function)
         #Replace the sorted individuals with the new populations
-        individuals.sort()
         individuals = replacement(new_pop, individuals)
         print_stats(generation, individuals)
 
