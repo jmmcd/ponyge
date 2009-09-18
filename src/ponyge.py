@@ -149,7 +149,7 @@ class Individual(object):
             self.genome = genome
         self.fitness = DEFAULT_FITNESS
         self.phenotype = None
-        self.usedCodons = 0
+        self.used_codons = 0
     
     def __cmp__(self, other):
         #-1*cmp for maximization
@@ -175,12 +175,12 @@ def print_stats(generation, individuals):
         return math.sqrt(float(sum([(value-ave)**2 for value in values]))/len(values))
 
     #TODO is invalid fitness handled properly in stat
-    aveFitness = ave([i.fitness for i in individuals])
-    stdFitness = std([i.fitness for i in individuals], aveFitness)
+    ave_fit = ave([i.fitness for i in individuals])
+    std_fit = std([i.fitness for i in individuals], ave_fit)
     #TODO is invalid length handeled properly in stats
-    aveUsedCodons = ave([i.usedCodons for i in individuals])
-    stdUsedCodons = std([i.usedCodons for i in individuals], aveUsedCodons)
-    print "Gen:%d evals:%d ave:%.2f+-%.3f aveUsedC:%.2f+-%.3f %s" % (generation, (GENERATION_SIZE*generation), aveFitness, stdFitness, aveUsedCodons, stdUsedCodons, individuals[0])
+    ave_used_codons = ave([i.used_codons for i in individuals])
+    std_used_codons = std([i.used_codons for i in individuals], ave_used_codons)
+    print "Gen:%d evals:%d ave:%.2f+-%.3f aveUsedC:%.2f+-%.3f %s" % (generation, (GENERATION_SIZE*generation), ave_fit, std_fit, ave_used_codons, std_used_codons, individuals[0])
 #    print_individuals(individuals)
 
 def print_individuals(individuals):
@@ -233,7 +233,7 @@ def onepoint_crossover(p, q):
 def evaluate_fitness(individuals, grammar, fitness_function):
     # Perform the mapping for each individual
     for individual in individuals:
-        individual.phenotype, individual.usedCodons = grammar.generate(individual.genome)
+        individual.phenotype, individual.used_codons = grammar.generate(individual.genome)
         if individual.phenotype != None:
             individual.evaluate(fitness_function)
 
@@ -250,7 +250,7 @@ def steady_state_replacement(new_pop, individuals):
 
 def search_loop(max_generations, individuals, grammar, replacement, selection, fitness_function):
     """Loop over max generations"""
-    #Evaluate initial population (-1 is initial generation)
+    #Evaluate initial population 
     evaluate_fitness(individuals, grammar, fitness_function)
     individuals.sort()
     print_stats(1,individuals)
