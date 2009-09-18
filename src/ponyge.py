@@ -5,7 +5,7 @@
 # Hereby licensed under the GNU GPL v3.
 
 
-import sys, copy, re, random
+import sys, copy, re, random, math
 
 class Grammar(object):
     NT = "NT" # Non Terminal 
@@ -70,7 +70,7 @@ class Grammar(object):
                     raise ValueError("Each rule must be on one line")
         
     def generate(self, input, max_wraps=2):
-        """Map input via rules to output"""
+        """Map input via rules to output. Returns output and used_input"""
         used_input = 0
         wraps = 0
         output = []
@@ -97,7 +97,7 @@ class Grammar(object):
 
         #Not completly expanded
         if len(unexpanded_symbols) > 0:
-            return None
+            return (None, 0)
 
         output = "".join(output)
         #Create correct python syntax
@@ -114,7 +114,7 @@ class Grammar(object):
             output = "\n".join([line for line in output.split("\n") 
                                 if line.strip() != ""])
 
-        return output
+        return (output, used_input)
 
 def string_match(target, output):
     """Fitness function for matching a string.  Takes an output string
@@ -149,6 +149,7 @@ class Individual(object):
             self.genome = genome
         self.fitness = DEFAULT_FITNESS
         self.phenotype = None
+        self.usedCodons = 0
     
     def __cmp__(self, other):
         #-1*cmp for maximization
@@ -167,8 +168,20 @@ def initialise_population(size=10):
     return [Individual(None) for cnt in range(size)]
 
 def print_stats(generation, individuals):
-    print "G:",generation, "FE:", (GENERATION_SIZE*generation),individuals[0]
-    #print_individuals(individuals)
+    #TODO print to file
+    def ave(values):
+        return float(sum(values))/len(values)
+    def std(values, ave):
+        return math.sqrt(float(sum([(value-ave)**2 for value in values]))/len(values))
+
+    #TODO is invalid fitness handled properly in stat
+    aveFitness = ave([i.fitness for i in individuals])
+    stdFitness = std([i.fitness for i in individuals], aveFitness)
+    #TODO is invalid length handeled properly in stats
+    aveUsedCodons = ave([i.usedCodons for i in individuals])
+    stdUsedCodons = std([i.usedCodons for i in individuals], aveUsedCodons)
+    print "Gen:%d evals:%d ave:%.2f+-%.3f aveUsedC:%.2f+-%.3f %s" % (generation, (GENERATION_SIZE*generation), aveFitness, stdFitness, aveUsedCodons, stdUsedCodons, individuals[0])
+#    print_individuals(individuals)
 
 def print_individuals(individuals):
     """Print the data of the individuals"""
@@ -220,7 +233,7 @@ def onepoint_crossover(p, q):
 def evaluate_fitness(individuals, grammar, fitness_function):
     # Perform the mapping for each individual
     for individual in individuals:
-        individual.phenotype = grammar.generate(individual.genome)
+        individual.phenotype, individual.usedCodons = grammar.generate(individual.genome)
         if individual.phenotype != None:
             individual.evaluate(fitness_function)
 
@@ -268,7 +281,7 @@ GRAMMAR_FILE = "grammars/letter.bnf"
 MUTATION_PROBABILITY = 0.1
 CROSSOVER_PROBABILITY = 0.7
 #TODO should not fitness function decied the default (or max fitness)
-DEFAULT_FITNESS = sys.maxint
+DEFAULT_FITNESS = sys.maxint/100000
             #individual.evaluate(xor_fitness)
 # Run program
 def main():
