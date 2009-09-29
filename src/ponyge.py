@@ -30,7 +30,7 @@ class Grammar(object):
         self.start_rule = None
         # Read the grammar file
         for line in open(file_name, 'r'):
-            if not line.startswith("#"):
+            if not line.startswith("#") and line.strip() != "":
                 # Split rules. Everything must be on one line
                 #TODO Avoid everything on one line
                 if line.find(RULE_SEPARATOR):
@@ -252,6 +252,7 @@ def search_loop(max_generations, individuals, grammar, replacement, selection, f
     """Loop over max generations"""
     #Evaluate initial population 
     evaluate_fitness(individuals, grammar, fitness_function)
+    best_ever = min(individuals)
     individuals.sort()
     print_stats(1,individuals)
     for generation in range(2,(max_generations+1)):
@@ -268,6 +269,8 @@ def search_loop(max_generations, individuals, grammar, replacement, selection, f
         #Replace the sorted individuals with the new populations
         individuals = replacement(new_pop, individuals)
         print_stats(generation, individuals)
+        best_ever = min(best_ever, min(individuals))
+    return best_ever
 
 #TODO can the functions be structured in a more sensible manner to
 CODON_SIZE = 127 
@@ -281,8 +284,8 @@ GRAMMAR_FILE = "grammars/letter.bnf"
 MUTATION_PROBABILITY = 0.1
 CROSSOVER_PROBABILITY = 0.7
 #TODO should not fitness function decied the default (or max fitness)
-DEFAULT_FITNESS = sys.maxint/100000
-            #individual.evaluate(xor_fitness)
+DEFAULT_FITNESS = sys.maxint/100000.0
+
 # Run program
 def main():
     # Read grammar
@@ -290,7 +293,8 @@ def main():
     # Create Individuals
     individuals = initialise_population(POPULATION_SIZE)
     # Loop
-    search_loop(GENERATIONS, individuals, bnf_grammar, generational_replacement, tournament_selection, lambda x: string_match("geva", x))
+    best_ever = search_loop(GENERATIONS, individuals, bnf_grammar, generational_replacement, tournament_selection, lambda x: string_match("geva", x))
+    print "Best", best_ever
 
 if __name__ == "__main__":
     main()
