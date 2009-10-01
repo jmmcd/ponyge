@@ -100,21 +100,26 @@ class Grammar(object):
             return (None, 0)
 
         output = "".join(output)
-        #Create correct python syntax
         if self.python_mode:
-            counter = 0
-            for char in output:
-                if char == "{":
-                    counter += 1
-                elif char == "}":
-                    counter -= 1
-                tabstr = "\n" + "  " * counter
-                if char == "{" or char == "}":
-                    output = output.replace(char, tabstr, 1)
-            output = "\n".join([line for line in output.split("\n") 
-                                if line.strip() != ""])
-
+            output = self.python_filter(output)
         return (output, used_input)
+
+    # Create correct python syntax. We use {} to track indentation,
+    # which is not ideal because of the clash with dict literals.
+    def python_filter(self, txt):
+        counter = 0
+        for char in txt:
+            if char == "{":
+                counter += 1
+            elif char == "}":
+                counter -= 1
+            tabstr = "\n" + "  " * counter
+            if char == "{" or char == "}":
+                txt = txt.replace(char, tabstr, 1)
+        txt = "\n".join([line for line in txt.split("\n") 
+                         if line.strip() != ""])
+        return txt
+
 
 def string_match(target, output):
     """Fitness function for matching a string.  Takes an output string
