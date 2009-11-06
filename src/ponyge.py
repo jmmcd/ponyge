@@ -104,22 +104,43 @@ class Grammar(object):
             output = self.python_filter(output)
         return (output, used_input)
 
-    # Create correct python syntax. We use {} to track indentation,
-    # which is not ideal because of the clash with dict literals.
+    # Create correct python syntax. We use {: and :} as special open
+    # and close brackets, because it's not possible to specify
+    # indentation correctly in a BNF grammar without this type of
+    # scheme.
     def python_filter(self, txt):
-        counter = 0
-        for char in txt:
-            if char == "{":
-                counter += 1
-            elif char == "}":
-                counter -= 1
-            tabstr = "\n" + "  " * counter
-            if char == "{" or char == "}":
-                txt = txt.replace(char, tabstr, 1)
+        indent_level = 0
+        for i in range(len(txt) - 1):
+            tok = txt[i:i+2]
+            if tok == "{:":
+                indent_level += 1
+            elif tok == ":}":
+                indent_level -= 1
+            tabstr = "\n" + "  " * indent_level
+            if tok == "{:" or tok == ":}":
+                txt = txt.replace(tok, tabstr, 1)
+        # Strip superfluous blank lines.
         txt = "\n".join([line for line in txt.split("\n") 
                          if line.strip() != ""])
         return txt
 
+# An unpleasant limitation in Python is the distinction between
+# eval and exec. The former can only be used to return the value
+# of a simple expression (not a statement) and the latter does not
+# return anything.
+def eval_or_exec(s):
+    #print s
+    try:
+        retval = eval(s)
+    except SyntaxError:
+        # SyntaxError will be thrown by eval() if s is compound,
+        # ie not a simple expression, eg if it contains function
+        # definitions, multiple lines, etc. Then we must use
+        # exec(). Then we assume that s will define a variable
+        # called "XXXeval_or_exec_outputXXX", and we'll use that.
+        exec(s)
+        retval = XXXeval_or_exec_outputXXX
+    return retval
 
 def string_match(target, output):
     """Fitness function for matching a string.  Takes an output string
@@ -133,16 +154,21 @@ def string_match(target, output):
     return fitness
 
 def xor_fitness(candidate):
-    """XOR fitness function with python evaluation"""
+    """XOR fitness function with python evaluation. Maximise."""
     def xor(x, y):
         return (x and not y) or (y and not x)
     f = eval(candidate)
     fitness = 0
     for x in [False, True]:
         for y in [False, True]:
-            if f(x, y) != xor(x, y):
+            if f(x, y) == xor(x, y):
                 fitness += 1
     return fitness
+
+def max_fitness(candidate):
+    """Arithmetic expressions with python evaluation. Maximise."""
+    # candidate defines a variable "fitness"
+    return eval_or_exec(candidate)
 
 class Individual(object):
     """A GE individual"""
@@ -284,7 +310,7 @@ POPULATION_SIZE = 100
 GENERATION_SIZE = 100
 #GENERATION_SIZE = 2
 GENERATIONS = 30
-#GRAMMAR_FILE = "grammars/boolean.pybnf"
+#GRAMMAR_FILE = "grammars/arithmetic.pybnf"
 GRAMMAR_FILE = "grammars/letter.bnf"
 MUTATION_PROBABILITY = 0.1
 CROSSOVER_PROBABILITY = 0.7
