@@ -4,4 +4,4 @@
 <space> ::= _
 # Vowels and consonats
 <vowel> ::= a|e|o|i|u|y
-<consonant> ::= g|v|w|b|c|d
+<consonant> ::= g|v|w|b|c|d|l|n

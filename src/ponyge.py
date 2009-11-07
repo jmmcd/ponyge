@@ -142,33 +142,41 @@ def eval_or_exec(s):
         retval = XXXeval_or_exec_outputXXX
     return retval
 
-def string_match(target, output):
-    """Fitness function for matching a string.  Takes an output string
-    and return fitness. Penalises output that is not the same length
-    as the target"""
-    fitness = max(len(target), len(output))
-    #Loops as long as the min(target, output) 
-    for (t,o) in zip(target, output):
-        if t == o:
-            fitness -= 1
-    return fitness
+class StringMatch():
+    """Fitness function for matching a string. Takes a string and
+    returns fitness. Penalises output that is not the same length as
+    the target. Usage: StringMatch("golden") returns a *callable
+    object*, ie the fitness function."""
+    maximise = False
+    def __init__(self, s):
+        self.target = s
+    def __call__(self, x):
+        fitness = max(len(self.target), len(x))
+        # Loops as long as the shorter of two strings
+        for (t, o) in zip(self.target, x):
+            if t == o:
+                fitness -= 1
+        return fitness
 
-def xor_fitness(candidate):
-    """XOR fitness function with python evaluation. Maximise."""
-    def xor(x, y):
-        return (x and not y) or (y and not x)
-    f = eval(candidate)
-    fitness = 0
-    for x in [False, True]:
-        for y in [False, True]:
-            if f(x, y) == xor(x, y):
-                fitness += 1
-    return fitness
+class XORFitness():
+    """XOR fitness function with python evaluation."""
+    maximise = True
+    def __call__(self, candidate):
+        def xor(x, y):
+            return (x and not y) or (y and not x)
+        f = eval(candidate)
+        fitness = 0
+        for x in [False, True]:
+            for y in [False, True]:
+                if f(x, y) == xor(x, y):
+                    fitness += 1
+        return fitness
 
-def max_fitness(candidate):
-    """Arithmetic expressions with python evaluation. Maximise."""
-    # candidate defines a variable "fitness"
-    return eval_or_exec(candidate)
+class MaxFitness():
+    """Maximisation with python evaluation."""
+    maximise = True
+    def __call__(self, candidate):
+        return eval_or_exec(candidate)
 
 class Individual(object):
     """A GE individual"""
@@ -178,14 +186,20 @@ class Individual(object):
                            for i in range(length)]
         else:
             self.genome = genome
-        self.fitness = DEFAULT_FITNESS
+        if FITNESS_FUNCTION.maximise:
+            self.fitness = -sys.maxint/100000.0
+        else:
+            self.fitness = sys.maxint/100000.0
         self.phenotype = None
         self.used_codons = 0
     
     def __cmp__(self, other):
-        #-1*cmp for maximization
-        #TODO better sign function
-        return cmp(DEFAULT_FITNESS,0)*cmp(self.fitness, other.fitness)
+        if FITNESS_FUNCTION.maximise:
+            return cmp(other.fitness, self.fitness)
+        else:
+            return cmp(self.fitness, other.fitness)
+
+        
 
     def __str__(self):
         return ("Individual: " + 
@@ -303,29 +317,30 @@ def search_loop(max_generations, individuals, grammar, replacement, selection, f
         best_ever = min(best_ever, min(individuals))
     return best_ever
 
-#TODO can the functions be structured in a more sensible manner to
+# TODO can the functions be structured better?
 CODON_SIZE = 127 
 ELITE_SIZE = 1
 POPULATION_SIZE = 100
 GENERATION_SIZE = 100
-#GENERATION_SIZE = 2
 GENERATIONS = 30
-#GRAMMAR_FILE = "grammars/arithmetic.pybnf"
-GRAMMAR_FILE = "grammars/letter.bnf"
 MUTATION_PROBABILITY = 0.1
 CROSSOVER_PROBABILITY = 0.7
-#TODO should not fitness function decied the default (or max fitness)
-DEFAULT_FITNESS = sys.maxint/100000.0
+GRAMMAR_FILE = "grammars/letter.bnf"
+FITNESS_FUNCTION = StringMatch("golden")
+# GRAMMAR_FILE = "grammars/arithmetic.pybnf"
+# FITNESS_FUNCTION = MaxFitness()
+# GRAMMAR_FILE = "grammars/boolean.pybnf"
+# FITNESS_FUNCTION = XORFitness()
 
 # Run program
-def main():
+def mane():
     # Read grammar
     bnf_grammar = Grammar(GRAMMAR_FILE)
     # Create Individuals
     individuals = initialise_population(POPULATION_SIZE)
     # Loop
-    best_ever = search_loop(GENERATIONS, individuals, bnf_grammar, generational_replacement, tournament_selection, lambda x: string_match("geva", x))
+    best_ever = search_loop(GENERATIONS, individuals, bnf_grammar, generational_replacement, tournament_selection, FITNESS_FUNCTION)
     print "Best", best_ever
 
 if __name__ == "__main__":
-    main()
+    mane()
