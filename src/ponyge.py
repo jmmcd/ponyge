@@ -234,8 +234,9 @@ def print_individuals(individuals):
         print(individual)
 
 def int_flip_mutation(individual):
-    """Mutate the individual by randomly chosing a new int with 
-    probability p_mut"""
+    """Mutate the individual by randomly chosing a new int with
+    probability p_mut. Works per-codon, hence no need for
+    "within_used" option."""
     for i in range(len(individual.genome)):
         if random.random() < MUTATION_PROBABILITY:
             individual.genome[i] = random.randint(0,CODON_SIZE)
@@ -259,13 +260,18 @@ def truncation_selection(population, proportion=0.5):
     cutoff = int(len(population) * float(proportion))
     return population[0:cutoff]
 
-def onepoint_crossover(p, q):
+def onepoint_crossover(p, q, within_used=True):
     """Given two individuals, create two children using one-point
     crossover and return them."""    
     # Get the chromosomes
     pc, qc = p.genome, q.genome
-    # Uniformly generate crossover points
-    pt_p, pt_q = random.randint(1, len(pc)), random.randint(1, len(qc))
+    # Uniformly generate crossover points. If within_used==True,
+    # points will be within the used section.
+    if within_used:
+        maxp, maxq = p.used_codons, q.used_codons
+    else:
+        maxp, maxq = len(pc), len(qc)
+    pt_p, pt_q = random.randint(1, maxp), random.randint(1, maxq)
     # Make new chromosomes by crossover: these slices perform copies
     if random.random() < CROSSOVER_PROBABILITY:
         c = pc[:pt_p] + qc[pt_q:]
