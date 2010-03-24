@@ -8,8 +8,8 @@
 import sys, copy, re, random, math
 
 class Grammar(object):
-    NT = "NT" # Non Terminal 
-    T = "T" # Terminal 
+    NT = "NT" # Non Terminal
+    T = "T" # Terminal
 
     def __init__(self, file_name):
         if file_name.endswith("pybnf"):
@@ -21,7 +21,7 @@ class Grammar(object):
     def readBNFFile(self, file_name):
         """Read a grammar file in BNF format"""
         # <.+?> Non greedy match of anything between brackets
-        NON_TERMINAL_PATTERN = "(<.+?>)" 
+        NON_TERMINAL_PATTERN = "(<.+?>)"
         RULE_SEPARATOR = "::="
         PRODUCTION_SEPARATOR = "|"
 
@@ -44,7 +44,7 @@ class Grammar(object):
                         self.start_rule = (lhs, self.NT)
                     # Find terminals
                     tmp_productions = []
-                    for production in [production.strip() 
+                    for production in [production.strip()
                                        for production in productions.split(PRODUCTION_SEPARATOR)]:
                         tmp_production = []
                         if not re.search(NON_TERMINAL_PATTERN, production):
@@ -55,20 +55,20 @@ class Grammar(object):
                             # TODO does this handle quoted NT symbols
                             for value in re.findall("<.+?>|[^<>]*", production):
                                 if value != '':
-                                    if not re.search(NON_TERMINAL_PATTERN, value): 
+                                    if not re.search(NON_TERMINAL_PATTERN, value):
                                         symbol = (value, self.T)
                                     else:
                                         symbol = (value, self.NT)
                                     tmp_production.append(symbol)
                         tmp_productions.append(tmp_production)
                     # Create a rule
-                    if not self.rules.has_key(lhs):
+                    if not lhs in self.rules:
                         self.rules[lhs] = tmp_productions
                     else:
                         raise ValueError("lhs should be unique", lhs)
                 else:
                     raise ValueError("Each rule must be on one line")
-        
+
     def generate(self, input, max_wraps=2):
         """Map input via rules to output. Returns output and used_input"""
         used_input = 0
@@ -82,7 +82,7 @@ class Grammar(object):
                 wraps += 1
             # Expand a production
             current_symbol = unexpanded_symbols.pop(0)
-            # Set output if it is a terminal        
+            # Set output if it is a terminal
             if current_symbol[1] != self.NT:
                 output.append(current_symbol[0])
             else:
@@ -120,7 +120,7 @@ class Grammar(object):
             if tok == "{:" or tok == ":}":
                 txt = txt.replace(tok, tabstr, 1)
         # Strip superfluous blank lines.
-        txt = "\n".join([line for line in txt.split("\n") 
+        txt = "\n".join([line for line in txt.split("\n")
                          if line.strip() != ""])
         return txt
 
@@ -129,7 +129,7 @@ class Grammar(object):
 # of a simple expression (not a statement) and the latter does not
 # return anything.
 def eval_or_exec(s):
-    #print s
+    #print(s)
     try:
         retval = eval(s)
     except SyntaxError:
@@ -182,27 +182,25 @@ class Individual(object):
     """A GE individual"""
     def __init__(self, genome, length=100):
         if genome == None:
-            self.genome = [random.randint(0, CODON_SIZE) 
+            self.genome = [random.randint(0, CODON_SIZE)
                            for i in range(length)]
         else:
             self.genome = genome
         if FITNESS_FUNCTION.maximise:
-            self.fitness = -sys.maxint/100000.0
+            self.fitness = -100000.0
         else:
-            self.fitness = sys.maxint/100000.0
+            self.fitness = 100000.0
         self.phenotype = None
         self.used_codons = 0
-    
-    def __cmp__(self, other):
-        if FITNESS_FUNCTION.maximise:
-            return cmp(other.fitness, self.fitness)
-        else:
-            return cmp(self.fitness, other.fitness)
 
-        
+    def __lt__(self, other):
+        if FITNESS_FUNCTION.maximise:
+            return other.fitness < self.fitness
+        else:
+            return self.fitness < other.fitness
 
     def __str__(self):
-        return ("Individual: " + 
+        return ("Individual: " +
                 str(self.phenotype) + "; " + str(self.fitness))
 
     def evaluate(self, fitness):
@@ -225,7 +223,7 @@ def print_stats(generation, individuals):
     #TODO is invalid length handeled properly in stats
     ave_used_codons = ave([i.used_codons for i in individuals])
     std_used_codons = std([i.used_codons for i in individuals], ave_used_codons)
-    print "Gen:%d evals:%d ave:%.2f+-%.3f aveUsedC:%.2f+-%.3f %s" % (generation, (GENERATION_SIZE*generation), ave_fit, std_fit, ave_used_codons, std_used_codons, individuals[0])
+    print("Gen:%d evals:%d ave:%.2f+-%.3f aveUsedC:%.2f+-%.3f %s" % (generation, (GENERATION_SIZE*generation), ave_fit, std_fit, ave_used_codons, std_used_codons, individuals[0]))
 #    print_individuals(individuals)
 
 def print_individuals(individuals):
@@ -262,7 +260,7 @@ def truncation_selection(population, proportion=0.5):
 
 def onepoint_crossover(p, q, within_used=True):
     """Given two individuals, create two children using one-point
-    crossover and return them."""    
+    crossover and return them."""
     # Get the chromosomes
     pc, qc = p.genome, q.genome
     # Uniformly generate crossover points. If within_used==True,
@@ -301,7 +299,7 @@ def steady_state_replacement(new_pop, individuals):
 
 def search_loop(max_generations, individuals, grammar, replacement, selection, fitness_function):
     """Loop over max generations"""
-    #Evaluate initial population 
+    #Evaluate initial population
     evaluate_fitness(individuals, grammar, fitness_function)
     best_ever = min(individuals)
     individuals.sort()
@@ -314,7 +312,7 @@ def search_loop(max_generations, individuals, grammar, replacement, selection, f
         while len(new_pop) < GENERATION_SIZE:
             new_pop.extend(onepoint_crossover(*random.sample(parents, 2)))
         #Mutate the new population
-        new_pop = map(int_flip_mutation, new_pop)
+        new_pop = list(map(int_flip_mutation, new_pop))
         #Evaluate the fitness of the new population
         evaluate_fitness(new_pop, grammar, fitness_function)
         #Replace the sorted individuals with the new populations
@@ -324,7 +322,7 @@ def search_loop(max_generations, individuals, grammar, replacement, selection, f
     return best_ever
 
 # TODO can the functions be structured better?
-CODON_SIZE = 127 
+CODON_SIZE = 127
 ELITE_SIZE = 1
 POPULATION_SIZE = 100
 GENERATION_SIZE = 100
@@ -346,7 +344,7 @@ def mane():
     individuals = initialise_population(POPULATION_SIZE)
     # Loop
     best_ever = search_loop(GENERATIONS, individuals, bnf_grammar, generational_replacement, tournament_selection, FITNESS_FUNCTION)
-    print "Best", best_ever
+    print("Best" + str(best_ever))
 
 if __name__ == "__main__":
     mane()
