@@ -49,12 +49,15 @@ class GE(object):
         ponyge.GRAMMAR_FILE = "grammars/lsystem.bnf"
         ponyge.POPULATION_SIZE = 9
         ponyge.GENERATION_SIZE = 9
+        ponyge.ELITE_SIZE = 1
+        ponyge.MUTATION_PROBABILITY = 0.01
+        ponyge.CROSSOVER_PROBABILITY = 0.7
         self.grammar = ponyge.Grammar(ponyge.GRAMMAR_FILE)
         self.individuals = ponyge.initialise_population(ponyge.POPULATION_SIZE)
         self.replacement = ponyge.generational_replacement
-        self.selection = ponyge.tournament_selection
-        self.fitness_function = DummyFitness()
-        ponyge.evaluate_fitness(self.individuals, self.grammar, self.fitness_function)
+        self.selection = lambda x: ponyge.tournament_selection(x, 6)
+        ponyge.FITNESS_FUNCTION = DummyFitness()
+        ponyge.evaluate_fitness(self.individuals, self.grammar, ponyge.FITNESS_FUNCTION)
         self.best_ever = min(self.individuals)
         self.individuals.sort()
         ponyge.print_stats(1, self.individuals)
@@ -64,7 +67,7 @@ class GE(object):
 
         self.individuals, self.best_ever = ponyge.step(
             self.individuals, self.grammar, self.replacement,
-            self.selection, self.fitness_function, self.best_ever)
+            self.selection, ponyge.FITNESS_FUNCTION, self.best_ever)
         ponyge.print_stats(self.generation, self.individuals)
         # write to stderr. this allows us to redirect entire run to stdout
         # but still know which generation we're on, so can rename screenshots
@@ -266,7 +269,7 @@ class GUI(object):
 #                phenotype = 'angle=6%d\ndepth=%d\nstep_size=10\ncircle_angle=20.5\naxiom=F\nF=F-F++F-F'%((i*j),(i*j))
                 phenotype = self.ge.individuals[i*self.n+j].phenotype
                 if phenotype is None or len(phenotype) > 400:
-                    return
+                    continue
                 print(phenotype)
                 p_dict = drawing.parse_phenotype(phenotype)
                 _lsystem = lsystem.LSystem(p_dict['axiom'],p_dict['rules'])
