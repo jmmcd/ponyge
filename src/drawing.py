@@ -73,12 +73,12 @@ class Drawing(turtle.Turtle):
         self.depth = depth
         self.STEP = 2
         self.ANGLE = 5
-        self.step = 40
+        self.step = 10
         self.circle_angle = 20.5
-        self.angle = 22.5
+        self.angle = 60
         #Avalible rules
-        self._rules = {"-":self.r, 
-                       "+":self.l, 
+        self._rules = {"-":self.l, 
+                       "+":self.r, 
                        "f":self.f, 
                        "F":self.F, 
                        "[":self._push, 
@@ -89,8 +89,8 @@ class Drawing(turtle.Turtle):
                        "X":self.X, 
                        "A":self.a, 
                        "D":self.D, 
-                       "p":self.p,
-                       "P":self.P,
+                       "}":self.p,
+                       "{":self.P,
                        "a":self.a}
         self.stack = []
         self.colors = []
@@ -98,9 +98,9 @@ class Drawing(turtle.Turtle):
     def draw(self, x, y, width, heigth):
         """Draw the string. The l-system axiom is extended to the specified depth"""
         self.reset()
-        turtle.title('pony graphics')
         turtle.setup(width,heigth,None,None)
         turtle.tracer(200,0)
+        self.penup()
         self.setposition(x,y)
         while not self.l_system.done and self.l_system.generation < self.depth:
             self.l_system.step()
@@ -158,8 +158,8 @@ if __name__ == "__main__":
 #Used for doodling drawings
 #Spirograph
 #    _lsystem = lsystem.LSystem('DC',[('C','CaD++[sCDsCD]++CaD'),('F','')])
-#Spirograph
-    _lsystem = lsystem.LSystem('PfPfPfPfPfPfPfP',[('P','+[PF+F+Fp]'),('F','')])
+
+    _lsystem = lsystem.LSystem('{f{f{f{f{f{f{f{',[('{','+[{F+F+F}]'),('F','')])
     _drawing = Drawing(_lsystem, 4)
     _drawing.angle = 22.5
     _drawing.step = 20
@@ -167,7 +167,14 @@ if __name__ == "__main__":
     _drawing.STEP = 2
     _drawing.ANGLE = 5
     _drawing.draw(0,0,1000,750)
+#    dragon_curve()
     while True:
         from time import sleep
         sleep(3)
 
+#angle=
+#depth=
+#stepsize=
+#circle_angle=
+#axiom=
+#F::=f+-....

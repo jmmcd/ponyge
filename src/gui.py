@@ -21,6 +21,8 @@ from idlelib.ColorDelegator import ColorDelegator
 from idlelib.textView import view_file # TextViewer
 from imp import reload
 import ponyge
+import lsystem
+import drawing
 
 import turtle
 import time
@@ -159,7 +161,7 @@ class GUI(object):
         self.graph_frame = g_frame = Frame(root)
 
         turtle._Screen._root = g_frame
-        turtle._Screen._canvas = turtle.ScrolledCanvas(g_frame, 800, 800, 800, 800)
+        turtle._Screen._canvas = turtle.ScrolledCanvas(g_frame, 600, 600, 600, 600)
         #xturtle.Screen._canvas.pack(expand=1, fill="both")
         self.screen = _s_ = turtle.Screen()
 #####
@@ -250,7 +252,15 @@ class GUI(object):
         for i in range(self.n):
             for j in range(self.m):
                 self.setUnselected(i, j)
-
+                #Drawing l-system                
+#                _lsystem = lsystem.LSystem(self.ge.individuals[i*self.n+j].phenotype)
+                _lsystem = lsystem.LSystem('F',[('F','F-F++F-F')])
+                _drawing = drawing.Drawing(_lsystem, 2)
+                _drawing.draw(self.myt.index_to_pixel(i, "x") + self.myt.xside_box / 2.0,
+                              self.myt.index_to_pixel(j, "y") + self.myt.yside_box / 2.0,
+                              self.myt.xside,
+                              self.myt.yside)
+        
         self.configGUI(NORMAL, NORMAL, DISABLED, NORMAL, INSTRUCTIONS)
         turtle.onscreenclick(self.clickcb, 1)
 
