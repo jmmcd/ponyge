@@ -280,6 +280,14 @@ def evaluate_fitness(individuals, grammar, fitness_function):
         if ind.phenotype != None:
             ind.evaluate(fitness_function)
 
+def interactive_evaluate_fitness(individuals, grammar, callback):
+    # perform mapping, set dummy fitness
+    evaluate_fitness(individuals, grammar, lambda x: 0.0)
+    fitness_values = callback()
+    for i, individual in enumerate(individuals):
+        if individual.phenotype != None:
+            individual.fitness = fitness_values[i]
+
 def generational_replacement(new_pop, individuals):
     for ind in individuals[:ELITE_SIZE]:
         new_pop.append(copy.copy(ind))
@@ -291,6 +299,22 @@ def steady_state_replacement(new_pop, individuals):
     individuals[-1] = max(new_pop + individuals[-1:])
     return individuals
 
+def step(individuals, grammar, replacement, selection, fitness_function, best_ever):
+    #Select parents
+    parents = selection(individuals)
+    #Crossover parents and add to the new population
+    new_pop = []
+    while len(new_pop) < GENERATION_SIZE:
+        new_pop.extend(onepoint_crossover(*random.sample(parents, 2)))
+    #Mutate the new population
+    new_pop = list(map(int_flip_mutation, new_pop))
+    #Evaluate the fitness of the new population
+    evaluate_fitness(new_pop, grammar, fitness_function)
+    #Replace the sorted individuals with the new populations
+    individuals = replacement(new_pop, individuals)
+    best_ever = min(best_ever, min(individuals))
+    return individuals, best_ever
+
 def search_loop(max_generations, individuals, grammar, replacement, selection, fitness_function):
     """Loop over max generations"""
     #Evaluate initial population
@@ -299,20 +323,9 @@ def search_loop(max_generations, individuals, grammar, replacement, selection, f
     individuals.sort()
     print_stats(1,individuals)
     for generation in range(2,(max_generations+1)):
-        #Select parents
-        parents = selection(individuals)
-        #Crossover parents and add to the new population
-        new_pop = []
-        while len(new_pop) < GENERATION_SIZE:
-            new_pop.extend(onepoint_crossover(*random.sample(parents, 2)))
-        #Mutate the new population
-        new_pop = list(map(int_flip_mutation, new_pop))
-        #Evaluate the fitness of the new population
-        evaluate_fitness(new_pop, grammar, fitness_function)
-        #Replace the sorted individuals with the new populations
-        individuals = replacement(new_pop, individuals)
+        individuals, best_ever = step(
+            individuals, grammar, replacement, selection, fitness_function, best_ever)
         print_stats(generation, individuals)
-        best_ever = min(best_ever, min(individuals))
     return best_ever
 
 # TODO can the functions be structured better? Make the selction sizes clearer
