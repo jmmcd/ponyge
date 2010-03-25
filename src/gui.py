@@ -253,9 +253,15 @@ class GUI(object):
             for j in range(self.m):
                 self.setUnselected(i, j)
                 #Drawing l-system                
-#                _lsystem = lsystem.LSystem(self.ge.individuals[i*self.n+j].phenotype)
-                _lsystem = lsystem.LSystem('F',[('F','F-F++F-F')])
-                _drawing = drawing.Drawing(_lsystem, 2)
+                phenotype = 'angle=6%d\ndepth=%d\nstep_size=10\ncircle_angle=20.5\naxiom=F\nF=F-F++F-F'%((i*j),(i*j))
+#                phenotype = self.ge.individuals[i*self.n+j].phenotype
+                print(phenotype)
+                p_dict = drawing.parse_phenotype(phenotype)
+                _lsystem = lsystem.LSystem(p_dict['axiom'],p_dict['rules'])
+                _drawing = drawing.Drawing(_lsystem, p_dict['depth'])
+                _drawing.angle = p_dict['angle']
+                _drawing.step = p_dict['step_size']
+                _drawing.circle_angle = p_dict['circle_angle']
                 _drawing.draw(self.myt.index_to_pixel(i, "x") + self.myt.xside_box / 2.0,
                               self.myt.index_to_pixel(j, "y") + self.myt.yside_box / 2.0,
                               self.myt.xside,

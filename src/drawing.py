@@ -8,6 +8,7 @@
 
 import turtle
 import lsystem
+import re
 
 class Drawing(turtle.Turtle):
     """Class for drawing"""
@@ -154,16 +155,48 @@ def curve_branch(depth=3):
     _drawing.STEP = 2
     _drawing.draw(0,0,1000,750)
 
+def parse_phenotype(phenotype):
+    """Parses a phenotype: (The keys for the rules are allowed in the
+    axiom or rules)
+    angle=[\d]*\.?[\d]+ 
+    depth=\d+ 
+    step_size=\d+
+    circle_angle=[\d]*\.?[\d]+ 
+    axiom=[-+fF\[\]CSsXAD\{\}a]+
+    [sSaADfFCX]=[-+fF\[\]CSsXAD\{\}a]+"""
+    #TODO can I get the keys for the rules allowed by drawing
+    REGEX_FLOAT = '\d+\.?\d+'
+    REGEX_INTEGER = '\d+'
+    REGEX_RULE_KEYS = '[-+fF\[\]CSsXAD\{\}a]+'
+    REGEX_RULE = '^(%s)=(%s)$'%(REGEX_RULE_KEYS,REGEX_RULE_KEYS)
+    REGEX_AXIOM = 'axiom=(%s)'%(REGEX_RULE_KEYS)
+    lines = phenotype.split('\n')#split phenotype on new lines
+    p_dict = {}
+    p_dict['angle'] = float(re.search(REGEX_FLOAT, lines[0]).group(0))
+    p_dict['depth'] = int(re.search(REGEX_INTEGER, lines[1]).group(0))
+    p_dict['step_size'] = int(re.search(REGEX_INTEGER, lines[2]).group(0))
+    p_dict['circle_angle'] = float(re.search(REGEX_FLOAT, lines[3]).group(0))
+    p_dict['axiom'] = re.search(REGEX_AXIOM,lines[4]).group(1)
+    rules = []
+    for line in lines[5:]:
+        match = re.search(REGEX_RULE, line)
+        if match is not None:
+            rules.append((match.group(1), match.group(2)))
+    p_dict['rules'] = rules
+    print(p_dict)
+    return p_dict
+
 if __name__ == "__main__":
 #Used for doodling drawings
 #Spirograph
 #    _lsystem = lsystem.LSystem('DC',[('C','CaD++[sCDsCD]++CaD'),('F','')])
-
-    _lsystem = lsystem.LSystem('{f{f{f{f{f{f{f{',[('{','+[{F+F+F}]'),('F','')])
-    _drawing = Drawing(_lsystem, 4)
-    _drawing.angle = 22.5
-    _drawing.step = 20
-    _drawing.circle_angle = 90
+    phenotype = 'angle=60\ndepth=2\nstep_size=10\ncircle_angle=20.5\naxiom=F\nF=F-F++F-F'
+    p_dict = parse_phenotype(phenotype)
+    _lsystem = lsystem.LSystem(p_dict['axiom'],p_dict['rules'])
+    _drawing = Drawing(_lsystem, p_dict['depth'])
+    _drawing.angle = p_dict['angle']
+    _drawing.step = p_dict['step_size']
+    _drawing.circle_angle = p_dict['circle_angle']
     _drawing.STEP = 2
     _drawing.ANGLE = 5
     _drawing.draw(0,0,1000,750)
@@ -172,9 +205,3 @@ if __name__ == "__main__":
         from time import sleep
         sleep(3)
 
-#angle=
-#depth=
-#stepsize=
-#circle_angle=
-#axiom=
-#F::=f+-....
