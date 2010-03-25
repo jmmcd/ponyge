@@ -66,6 +66,10 @@ class GE(object):
             self.individuals, self.grammar, self.replacement,
             self.selection, self.fitness_function, self.best_ever)
         ponyge.print_stats(self.generation, self.individuals)
+        # write to stderr. this allows us to redirect entire run to stdout
+        # but still know which generation we're on, so can rename screenshots
+        # correctly
+        sys.stderr.write("Gen: " + str(self.generation) + "\n")
         self.generation += 1
 
     def set_fitnesses(self, fitnesses):
@@ -102,8 +106,9 @@ class MyTurtle(object):
             turtle.color("red")
         else:
             turtle.color("black")
+        turtle.ht()
         turtle.up()
-        turtle.tracer(100,0)
+        turtle.tracer(10000,0)
         x = self.index_to_pixel(i, "x")
         y = self.index_to_pixel(j, "y")
         print("going to " + str(x) + " " + str(y))
@@ -171,6 +176,8 @@ class GUI(object):
         #xturtle.RawTurtle.canvases = [self.scanvas]
         turtle.RawTurtle.screens = [_s_]
 
+        turtle.ht()
+
         self.scanvas.pack(side=TOP, fill=BOTH, expand=1)
 
         self.btn_frame = btn_frame = Frame(g_frame, height=100)
@@ -203,6 +210,9 @@ class GUI(object):
         ij = self.myt.get_i_j(x, y)
         print(str(ij))
         self.setSelected(*ij)
+
+    def spacecb(self):
+        self.nextGeneration()
 
     def _destroy(self):
         self.root.destroy()
@@ -255,6 +265,8 @@ class GUI(object):
                 #Drawing l-system                
 #                phenotype = 'angle=6%d\ndepth=%d\nstep_size=10\ncircle_angle=20.5\naxiom=F\nF=F-F++F-F'%((i*j),(i*j))
                 phenotype = self.ge.individuals[i*self.n+j].phenotype
+                if len(phenotype) > 3000:
+                    return
                 print(phenotype)
                 p_dict = drawing.parse_phenotype(phenotype)
                 _lsystem = lsystem.LSystem(p_dict['axiom'],p_dict['rules'])
@@ -269,6 +281,8 @@ class GUI(object):
         
         self.configGUI(NORMAL, NORMAL, DISABLED, NORMAL, INSTRUCTIONS)
         turtle.onscreenclick(self.clickcb, 1)
+        turtle.onkey(self.spacecb, "space")
+        turtle.listen()
 
     def setSelected(self, i, j):
         if self.fitness[i*self.n + j] > 0.0:
