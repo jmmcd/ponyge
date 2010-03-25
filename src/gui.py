@@ -14,6 +14,7 @@
 
 import sys
 import os
+import time
 
 from tkinter import *
 from idlelib.Percolator import Percolator
@@ -74,6 +75,14 @@ class GE(object):
         # correctly
         sys.stderr.write("Gen: " + str(self.generation) + "\n")
         self.generation += 1
+
+    def print_to_file(self, file_name='tmp'):
+        #TODO pythonify
+        outfile = open(file_name+'.pop','w')
+        outfile.write("generation: "+str(self.generation)+"; nindividuals: " + str(len(self.individuals)) + "; indifiduals:\n")
+        for individual in self.individuals:
+            outfile.write(str(individual)+'\n')
+        outfile.close()
 
     def set_fitnesses(self, fitnesses):
         for ind, fitness in zip(self.individuals, fitnesses):
@@ -217,6 +226,13 @@ class GUI(object):
     def spacecb(self):
         self.nextGeneration()
 
+    def savecb(self):
+        file_name = 'output_ponyGEGUI_'+str(time.time())
+        self.ge.print_to_file(file_name)
+        outfile = open(file_name+'.eps','a')
+        outfile.write(self.scanvas.postscript())
+        outfile.close()
+
     def _destroy(self):
         self.root.destroy()
         sys.exit()
@@ -285,6 +301,7 @@ class GUI(object):
         self.configGUI(NORMAL, NORMAL, DISABLED, NORMAL, INSTRUCTIONS)
         turtle.onscreenclick(self.clickcb, 1)
         turtle.onkey(self.spacecb, "space")
+        turtle.onkey(self.savecb, "s")
         turtle.listen()
 
     def setSelected(self, i, j):
