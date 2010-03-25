@@ -41,6 +41,14 @@ class Drawing(turtle.Turtle):
     def s(self): #decrease step size
         self.step -= self.STEP
 
+    def P(self): #begin polygon
+        self.begin_poly()
+        self.begin_fill()
+
+    def p(self): #end polygon
+        self.end_poly()
+        self.end_fill()
+
     def a(self): #decrease angle
         self.angle -= self.ANGLE
 
@@ -81,12 +89,16 @@ class Drawing(turtle.Turtle):
                        "X":self.X, 
                        "A":self.a, 
                        "D":self.D, 
+                       "p":self.p,
+                       "P":self.P,
                        "a":self.a}
         self.stack = []
+        self.colors = []
 
     def draw(self, x, y, width, heigth):
         """Draw the string. The l-system axiom is extended to the specified depth"""
         self.reset()
+        turtle.title('pony graphics')
         turtle.setup(width,heigth,None,None)
         turtle.tracer(200,0)
         self.setposition(x,y)
@@ -94,6 +106,7 @@ class Drawing(turtle.Turtle):
             self.l_system.step()
         print(self.l_system.string)
         self._draw(self.l_system.string, self._rules)
+        self.hideturtle()
         turtle.update()
 
     def _draw(self, commands, rules):
@@ -144,8 +157,10 @@ def curve_branch(depth=3):
 if __name__ == "__main__":
 #Used for doodling drawings
 #Spirograph
-    _lsystem = lsystem.LSystem('DC',[('C','CaD++[sCDsCD]++CaD'),('F','')])
-    _drawing = Drawing(_lsystem, 2)
+#    _lsystem = lsystem.LSystem('DC',[('C','CaD++[sCDsCD]++CaD'),('F','')])
+#Spirograph
+    _lsystem = lsystem.LSystem('PfPfPfPfPfPfPfP',[('P','+[PF+F+Fp]'),('F','')])
+    _drawing = Drawing(_lsystem, 4)
     _drawing.angle = 22.5
     _drawing.step = 20
     _drawing.circle_angle = 90
