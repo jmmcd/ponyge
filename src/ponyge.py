@@ -194,9 +194,9 @@ class Individual(object):
 
     def __lt__(self, other):
         if FITNESS_FUNCTION.maximise:
-            return other.fitness < self.fitness
-        else:
             return self.fitness < other.fitness
+        else:
+            return other.fitness < self.fitness
 
     def __str__(self):
         return ("Individual: " +
@@ -241,7 +241,7 @@ def tournament_selection(population, tournament_size=3):
     winners = []
     while len(winners) < GENERATION_SIZE:
         competitors = random.sample(population, tournament_size)
-        competitors.sort()
+        competitors.sort(reverse=True)
         winners.append(competitors[0])
     return winners
 
@@ -289,13 +289,14 @@ def interactive_evaluate_fitness(individuals, grammar, callback):
             individual.fitness = fitness_values[i]
 
 def generational_replacement(new_pop, individuals):
+    individuals.sort(reverse=True)
     for ind in individuals[:ELITE_SIZE]:
         new_pop.append(copy.copy(ind))
-    new_pop.sort()
+    new_pop.sort(reverse=True)
     return new_pop[:GENERATION_SIZE]
 
 def steady_state_replacement(new_pop, individuals):
-    individuals.sort()
+    individuals.sort(reverse=True)
     individuals[-1] = max(new_pop + individuals[-1:])
     return individuals
 
@@ -312,14 +313,14 @@ def step(individuals, grammar, replacement, selection, fitness_function, best_ev
     evaluate_fitness(new_pop, grammar, fitness_function)
     #Replace the sorted individuals with the new populations
     individuals = replacement(new_pop, individuals)
-    best_ever = min(best_ever, min(individuals))
+    best_ever = max(best_ever, max(individuals))
     return individuals, best_ever
 
 def search_loop(max_generations, individuals, grammar, replacement, selection, fitness_function):
     """Loop over max generations"""
     #Evaluate initial population
     evaluate_fitness(individuals, grammar, fitness_function)
-    best_ever = min(individuals)
+    best_ever = max(individuals)
     individuals.sort()
     print_stats(1,individuals)
     for generation in range(2,(max_generations+1)):
@@ -334,7 +335,7 @@ ELITE_SIZE = 1
 POPULATION_SIZE = 100
 GENERATION_SIZE = 100
 GENERATIONS = 30
-MUTATION_PROBABILITY = 0.1
+MUTATION_PROBABILITY = 0.01
 CROSSOVER_PROBABILITY = 0.7
 GRAMMAR_FILE = "grammars/letter.bnf"
 FITNESS_FUNCTION = StringMatch("golden")
