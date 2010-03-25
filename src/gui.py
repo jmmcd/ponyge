@@ -265,7 +265,7 @@ class GUI(object):
                 #Drawing l-system                
 #                phenotype = 'angle=6%d\ndepth=%d\nstep_size=10\ncircle_angle=20.5\naxiom=F\nF=F-F++F-F'%((i*j),(i*j))
                 phenotype = self.ge.individuals[i*self.n+j].phenotype
-                if len(phenotype) > 3000:
+                if phenotype is None or len(phenotype) > 400:
                     return
                 print(phenotype)
                 p_dict = drawing.parse_phenotype(phenotype)
