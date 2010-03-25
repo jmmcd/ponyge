@@ -4,7 +4,6 @@
 # Copyright (c) 2009 Erik Hemberg and James McDermott
 # Hereby licensed under the GNU GPL v3.
 
-
 import sys, copy, re, random, math
 
 class Grammar(object):
@@ -218,18 +217,13 @@ def print_stats(generation, individuals):
         return math.sqrt(float(sum([(value-ave)**2 for value in values]))/len(values))
 
     #TODO is invalid fitness handled properly in stat
-    ave_fit = ave([i.fitness for i in individuals])
-    std_fit = std([i.fitness for i in individuals], ave_fit)
+    ave_fit = ave([ind.fitness for ind in individuals])
+    std_fit = std([ind.fitness for ind in individuals], ave_fit)
     #TODO is invalid length handeled properly in stats
     ave_used_codons = ave([i.used_codons for i in individuals])
     std_used_codons = std([i.used_codons for i in individuals], ave_used_codons)
     print("Gen:%d evals:%d ave:%.2f+-%.3f aveUsedC:%.2f+-%.3f %s" % (generation, (GENERATION_SIZE*generation), ave_fit, std_fit, ave_used_codons, std_used_codons, individuals[0]))
 #    print_individuals(individuals)
-
-def print_individuals(individuals):
-    """Print the data of the individuals"""
-    for individual in individuals:
-        print(individual)
 
 def int_flip_mutation(individual):
     """Mutate the individual by randomly chosing a new int with
@@ -252,7 +246,7 @@ def tournament_selection(population, tournament_size=3):
     return winners
 
 def truncation_selection(population, proportion=0.5):
-    """ Given an entire population, return the best <proportion> of
+    """Given an entire population, return the best <proportion> of
     them."""
     population.sort(reverse=True)
     cutoff = int(len(population) * float(proportion))
@@ -281,10 +275,10 @@ def onepoint_crossover(p, q, within_used=True):
 
 def evaluate_fitness(individuals, grammar, fitness_function):
     # Perform the mapping for each individual
-    for individual in individuals:
-        individual.phenotype, individual.used_codons = grammar.generate(individual.genome)
-        if individual.phenotype != None:
-            individual.evaluate(fitness_function)
+    for ind in individuals:
+        ind.phenotype, ind.used_codons = grammar.generate(ind.genome)
+        if ind.phenotype != None:
+            ind.evaluate(fitness_function)
 
 def generational_replacement(new_pop, individuals):
     for ind in individuals[:ELITE_SIZE]:
@@ -321,7 +315,7 @@ def search_loop(max_generations, individuals, grammar, replacement, selection, f
         best_ever = min(best_ever, min(individuals))
     return best_ever
 
-# TODO can the functions be structured better?
+# TODO can the functions be structured better? Make the selction sizes clearer
 CODON_SIZE = 127
 ELITE_SIZE = 1
 POPULATION_SIZE = 100
