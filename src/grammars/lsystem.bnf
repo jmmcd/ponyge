@@ -1,14 +1,15 @@
-<s> ::= <def_angle>\n<def_depth>\n<def_stepsize>\n<def_circle_angle>\n<def_axiom>\n<rules>
+<s> ::= <def_angle>:<def_depth>:<def_stepsize>:<def_circle_angle>:<def_axiom>:<rules>
 <def_angle> ::= angle=<angle>
 <def_depth> ::= depth=<depth>
 <def_stepsize> ::= stepsize=<stepsize>
 <def_circle_angle> ::= circle_angle=<angle>
-<def_axiom> ::= axiom=<code>
-<rules> ::= <rule> | <rules>\n<rule>
+<def_axiom> ::= axiom=<code><code>
+<rules> ::= <rule> | <rules>:<rule>
 <rule> ::= <char>=<rhs>
 <code> ::= <char> | <char><code>
 <rhs> ::= <code> | {<code>} | [<code>]
-<char> ::= f | F | { | } | [ | ] | - | + | C | S | s | X | A | D | a
-<angle> ::= 15 | 20 | 22.5 | 25 | 27.5
-<depth> ::= 1 | 2 | 3
-<stepsize> ::= 10 | 12 | 14 | 20
+#<char> ::= f | F | { | } | [ | ] | - | + | C | S | s | X | A | D | a
+<char> ::= f | F | - | + | C | D | FD 
+<angle> ::= 15 | 25 | 60
+<depth> ::= 2 | 3 | 4
+<stepsize> ::= 10 | 16

@@ -170,7 +170,8 @@ def parse_phenotype(phenotype):
     REGEX_RULE_KEYS = '[-+fF\[\]CSsXAD\{\}a]+'
     REGEX_RULE = '^(%s)=(%s)$'%(REGEX_RULE_KEYS,REGEX_RULE_KEYS)
     REGEX_AXIOM = 'axiom=(%s)'%(REGEX_RULE_KEYS)
-    lines = phenotype.split('\n')#split phenotype on new lines
+    lines = phenotype.split(':')
+    print(lines)
     p_dict = {}
     p_dict['angle'] = float(re.search(REGEX_FLOAT, lines[0]).group(0))
     p_dict['depth'] = int(re.search(REGEX_INTEGER, lines[1]).group(0))

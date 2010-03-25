@@ -46,7 +46,7 @@ class DummyFitness():
 class GE(object):
     def __init__(self):
         self.generation = 0
-        ponyge.GRAMMAR_FILE = "grammars/letter.bnf"
+        ponyge.GRAMMAR_FILE = "grammars/lsystem.bnf"
         ponyge.POPULATION_SIZE = 9
         ponyge.GENERATION_SIZE = 9
         self.grammar = ponyge.Grammar(ponyge.GRAMMAR_FILE)
@@ -253,8 +253,8 @@ class GUI(object):
             for j in range(self.m):
                 self.setUnselected(i, j)
                 #Drawing l-system                
-                phenotype = 'angle=6%d\ndepth=%d\nstep_size=10\ncircle_angle=20.5\naxiom=F\nF=F-F++F-F'%((i*j),(i*j))
-#                phenotype = self.ge.individuals[i*self.n+j].phenotype
+#                phenotype = 'angle=6%d\ndepth=%d\nstep_size=10\ncircle_angle=20.5\naxiom=F\nF=F-F++F-F'%((i*j),(i*j))
+                phenotype = self.ge.individuals[i*self.n+j].phenotype
                 print(phenotype)
                 p_dict = drawing.parse_phenotype(phenotype)
                 _lsystem = lsystem.LSystem(p_dict['axiom'],p_dict['rules'])
