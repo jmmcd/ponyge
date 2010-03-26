@@ -196,6 +196,9 @@ class GUI(object):
         self.next_btn = Button(btn_frame, text=" NEXT ", font=btnfont, fg = "white",
                                 disabledforeground = "#fed", command=self.nextGeneration)
         self.next_btn.pack(side=LEFT, fill=X, expand=1)
+        self.save_btn = Button(btn_frame, text=" SAVE ", font=btnfont, fg = "white",
+                                disabledforeground = "#fed", command=self.savecb)
+        self.save_btn.pack(side=LEFT, fill=X, expand=1)
         self.stop_btn = Button(btn_frame, text=" STOP ",  font=btnfont, fg = "white",
                                 disabledforeground = "#fed", command = self.stopIt)
         self.stop_btn.pack(side=LEFT, fill=X, expand=1)
@@ -213,7 +216,7 @@ class GUI(object):
         Percolator(text).insertfilter(ColorDelegator())
         self.dirty = False
         self.exitflag = False
-        self.configGUI(NORMAL, DISABLED, DISABLED, DISABLED, INSTRUCTIONS)
+        self.configGUI(NORMAL, DISABLED, DISABLED, DISABLED, DISABLED, INSTRUCTIONS)
         self.state = STARTUP
         self.nextGeneration()
 
@@ -237,13 +240,19 @@ class GUI(object):
         self.root.destroy()
         sys.exit()
 
-    def configGUI(self, menu, next, stop, clear, txt="", color="blue"):
+    def configGUI(self, menu, next, save, stop, clear, txt="", color="blue"):
 
         self.next_btn.config(state=next)
         if next==NORMAL:
             self.next_btn.config(bg="#d00")
         else:
             self.next_btn.config(bg="#fca")
+
+        self.save_btn.config(state=save)
+        if save==NORMAL:
+            self.save_btn.config(bg="#d00")
+        else:
+            self.save_btn.config(bg="#fca")
 
         self.stop_btn.config(state=stop)
         if stop==NORMAL:
@@ -264,14 +273,12 @@ class GUI(object):
         self.refreshCanvas()
         self.dirty = True
         turtle.TurtleScreen._RUNNING = True
-        self.configGUI(DISABLED, DISABLED, NORMAL, DISABLED,
-                       "demo running...", "black")
         self.screen.clear()
         self.screen.mode("standard")
         self.state = RUNNING
 
         self.selected = []
-        self.configGUI(DISABLED, DISABLED, NORMAL, DISABLED,
+        self.configGUI(DISABLED, DISABLED, DISABLED, NORMAL, DISABLED,
                        "Drawing, please wait...", "red")
 
         self.ge.set_fitnesses(self.fitness)
@@ -298,7 +305,7 @@ class GUI(object):
                               self.myt.xside,
                               self.myt.yside)
         
-        self.configGUI(NORMAL, NORMAL, DISABLED, NORMAL, INSTRUCTIONS)
+        self.configGUI(NORMAL, NORMAL, NORMAL, DISABLED, INSTRUCTIONS)
         turtle.onscreenclick(self.clickcb, 1)
         turtle.onkey(self.spacecb, "space")
         turtle.onkey(self.savecb, "s")
@@ -321,13 +328,13 @@ class GUI(object):
         self.refreshCanvas()
         self.screen._delete("all")
         self.scanvas.config(cursor="")
-        self.configGUI(NORMAL, NORMAL, DISABLED, DISABLED)
+        self.configGUI(NORMAL, NORMAL, NORMAL, DISABLED, DISABLED)
 
     def stopIt(self):
         if self.exitflag:
             self.clearCanvas()
             self.exitflag = False
-            self.configGUI(NORMAL, NORMAL, DISABLED, DISABLED,
+            self.configGUI(NORMAL, NORMAL, NORMAL, DISABLED, NORMAL,
                            "STOPPED!", "red")
             turtle.TurtleScreen._RUNNING = False
             #print "stopIT: exitflag = True"
