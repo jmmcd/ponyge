@@ -291,12 +291,12 @@ class GUI(object):
                 #Drawing l-system                
 #                phenotype = 'angle=6%d\ndepth=%d\nstep_size=10\ncircle_angle=20.5\naxiom=F\nF=F-F++F-F'%((i*j),(i*j))
                 phenotype = self.ge.individuals[i*self.n+j].phenotype
-                if phenotype is None or len(phenotype) > 400:
+                if phenotype is None:
                     continue
                 print(phenotype)
                 p_dict = drawing.parse_phenotype(phenotype)
                 _lsystem = lsystem.LSystem(p_dict['axiom'],p_dict['rules'])
-                _drawing = drawing.Drawing(_lsystem, p_dict['depth'])
+                _drawing = drawing.Drawing(_lsystem, p_dict['depth'], max_length=8000)
                 _drawing.angle = p_dict['angle']
                 _drawing.step = p_dict['step_size']
                 _drawing.circle_angle = p_dict['circle_angle']

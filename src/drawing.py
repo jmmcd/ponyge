@@ -67,7 +67,7 @@ class Drawing(turtle.Turtle):
         self.setposition(item[0])
         self.setheading(item[1])
 
-    def __init__(self, l_system, depth):
+    def __init__(self, l_system, depth, max_length=None):
         """Set the lsystem and the initial parameters"""
         super(Drawing,self).__init__()
         self.l_system = l_system
@@ -77,6 +77,7 @@ class Drawing(turtle.Turtle):
         self.step = 10
         self.circle_angle = 20.5
         self.angle = 60
+        self.max_length = max_length
         #Avalible rules
         self._rules = {"-":self.l, 
                        "+":self.r, 
@@ -105,6 +106,11 @@ class Drawing(turtle.Turtle):
         self.setposition(x,y)
         while not self.l_system.done and self.l_system.generation < self.depth:
             self.l_system.step()
+            if (self.max_length is not None and 
+                len(self.l_system.string) > self.max_length):
+                print("Exceeded maximum length: will not draw L-system")
+                self.hideturtle()
+                return
         print(self.l_system.string)
         self._draw(self.l_system.string, self._rules)
         self.hideturtle()
