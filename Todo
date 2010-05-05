@@ -1,0 +1,7 @@
+- Make README in rst
+- Use compile if the evolved function will be used multiple times
+- Let fitness return tuples to allow e.g. parisimony preassure
+- Create example of evolving python code
+- Create even-n parity example
+- Enable line breaks in the rules when parsing, i.e. avoid everything on one line
+- Print stats to file
