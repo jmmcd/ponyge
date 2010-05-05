@@ -1,0 +1,9 @@
+ponyge-0.1.1
+	- Cleaning up code in ponyge
+	- Fixed bug where xover of invalid inds gave 0-length inds (Thanks
+	to Oscar for bug report). 
+	- Fixed MemoryError (http://bugs.python.org/issue3971, thanks to Oscar) when eval()/exec()ing over-deep phenotypes.
+	- Fixed statistical handling of invalids.
+	- Try/except around tkinter import to work around naming issue. Thanks to redditor gleapsite.
+ponyge-0.1
+	- Initial release
