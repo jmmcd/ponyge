@@ -128,15 +128,22 @@ class Grammar(object):
 def eval_or_exec(s):
     #print(s)
     try:
-        retval = eval(s)
-    except SyntaxError:
-        # SyntaxError will be thrown by eval() if s is compound,
-        # ie not a simple expression, eg if it contains function
-        # definitions, multiple lines, etc. Then we must use
-        # exec(). Then we assume that s will define a variable
-        # called "XXXeval_or_exec_outputXXX", and we'll use that.
-        exec(s)
-        retval = XXXeval_or_exec_outputXXX
+        try:
+            retval = eval(s)
+        except SyntaxError:
+            # SyntaxError will be thrown by eval() if s is compound,
+            # ie not a simple expression, eg if it contains function
+            # definitions, multiple lines, etc. Then we must use
+            # exec(). Then we assume that s will define a variable
+            # called "XXXeval_or_exec_outputXXX", and we'll use that.
+            exec(s)
+            retval = XXXeval_or_exec_outputXXX
+    except MemoryError:
+        # Will be thrown by eval(s) or exec(s) if s contains over-deep
+        # nesting (see http://bugs.python.org/issue3971). The amount
+        # of nesting allowed varies between versions, is quite low in
+        # Python2.5. If we can't evaluate, award bad fitness.
+        retval = default_fitness(FITNESS_FUNCTION.maximise)
     return retval
 
 class StringMatch():
@@ -182,10 +189,7 @@ class Individual(object):
                            for i in xrange(length)]
         else:
             self.genome = genome
-        if FITNESS_FUNCTION.maximise:
-            self.fitness = -100000.0
-        else:
-            self.fitness = 100000.0
+        self.fitness = default_fitness(FITNESS_FUNCTION.maximise)
         self.phenotype = None
         self.used_codons = 0
 
@@ -220,6 +224,12 @@ def print_stats(generation, individuals):
                            if i.phenotype is not None], ave_used_codons)
     print("Gen:%d evals:%d ave:%.2f+-%.3f aveUsedC:%.2f+-%.3f %s" % (generation, (GENERATION_SIZE*generation), ave_fit, std_fit, ave_used_codons, std_used_codons, individuals[0]))
 #    print_individuals(individuals)
+
+def default_fitness(maximise):
+    if maximise:
+        return -100000.0
+    else:
+        return 100000.0
 
 def int_flip_mutation(individual):
     """Mutate the individual by randomly chosing a new int with
