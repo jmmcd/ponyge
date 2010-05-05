@@ -96,7 +96,7 @@ class Grammar(object):
 
         #Not completly expanded
         if len(unexpanded_symbols) > 0:
-            return (None, 0)
+            return (None, used_input)
 
         output = "".join(output)
         if self.python_mode:
@@ -216,12 +216,12 @@ def print_stats(generation, individuals):
     def std(values, ave):
         return math.sqrt(float(sum([(value-ave)**2 for value in values]))/len(values))
 
-    #TODO is invalid fitness handled properly in stat
-    ave_fit = ave([ind.fitness for ind in individuals])
-    std_fit = std([ind.fitness for ind in individuals], ave_fit)
-    #TODO is invalid length handeled properly in stats
-    ave_used_codons = ave([i.used_codons for i in individuals])
-    std_used_codons = std([i.used_codons for i in individuals], ave_used_codons)
+    ave_fit = ave([i.fitness for i in individuals if i.phenotype is not None])
+    std_fit = std([i.fitness for i in individuals if i.phenotype is not None], ave_fit)
+    ave_used_codons = ave([i.used_codons for i in individuals
+                           if i.phenotype is not None])
+    std_used_codons = std([i.used_codons for i in individuals
+                           if i.phenotype is not None], ave_used_codons)
     print("Gen:%d evals:%d ave:%.2f+-%.3f aveUsedC:%.2f+-%.3f %s" % (generation, (GENERATION_SIZE*generation), ave_fit, std_fit, ave_used_codons, std_used_codons, individuals[0]))
 #    print_individuals(individuals)
 
