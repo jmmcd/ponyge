@@ -48,8 +48,8 @@ is to match a target word. This is the default problem: as you can see
 in ponyge.py, the necessary grammar and fitness function are specified
 by default:
 
-GRAMMAR_FILE = "grammars/letter.bnf"
-FITNESS_FUNCTION = StringMatch("golden")
+GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/letter.bnf", \
+StringMatch("golden")
 
 
 Max
@@ -59,9 +59,8 @@ The grammar specifies legal ways of combining numbers using arithmetic
 operations. The aim is to create the largest value possible. Use the
 following grammar and fitness function (in ponyge.py):
 
-GRAMMAR_FILE = "grammars/arithmetic.pybnf"
-FITNESS_FUNCTION = MaxFitness()
-
+GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/arithmetic.pybnf", \
+MaxFitness()
 
 XOR
 ---
@@ -71,8 +70,8 @@ benchmark. The grammar specifies two inputs, x and y, and allows them
 to be combined using AND, OR, and NOT. The aim is to evolve the XOR
 function. Use the following grammar and fitness function:
 
-GRAMMAR_FILE = "grammars/boolean.pybnf"
-FITNESS_FUNCTION = XORFitness()
+GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/boolean.pybnf", \
+XORFitness()
 
 
 L-System
