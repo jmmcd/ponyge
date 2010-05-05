@@ -31,12 +31,10 @@ class Grammar(object):
         for line in open(file_name, 'r'):
             if not line.startswith("#") and line.strip() != "":
                 # Split rules. Everything must be on one line
-                #TODO Avoid everything on one line
                 if line.find(RULE_SEPARATOR):
                     lhs, productions = line.split(RULE_SEPARATOR)
                     lhs = lhs.strip()
                     if not re.search(NON_TERMINAL_PATTERN, lhs):
-                        #TODO correct error type?
                         raise ValueError("lhs is not a NT:",lhs)
                     self.non_terminals.add(lhs)
                     if self.start_rule == None:
@@ -51,7 +49,7 @@ class Grammar(object):
                             tmp_production.append((production, self.T))
                         else:
                             # Match non terminal or terminal pattern
-                            # TODO does this handle quoted NT symbols
+                            # TODO does this handle quoted NT symbols?
                             for value in re.findall("<.+?>|[^<>]*", production):
                                 if value != '':
                                     if not re.search(NON_TERMINAL_PATTERN, value):
@@ -109,7 +107,7 @@ class Grammar(object):
     # scheme.
     def python_filter(self, txt):
         indent_level = 0
-        for i in range(len(txt) - 1):
+        for i in xrange(len(txt) - 1):
             tok = txt[i:i+2]
             if tok == "{:":
                 indent_level += 1
@@ -161,13 +159,12 @@ class XORFitness():
     """XOR fitness function with python evaluation."""
     maximise = True
     def __call__(self, candidate):
-        def xor(x, y):
-            return (x and not y) or (y and not x)
+        import operator
         f = eval(candidate)
         fitness = 0
         for x in [False, True]:
             for y in [False, True]:
-                if f(x, y) == xor(x, y):
+                if f(x, y) == operator.xor(x, y):
                     fitness += 1
         return fitness
 
@@ -182,7 +179,7 @@ class Individual(object):
     def __init__(self, genome, length=100):
         if genome == None:
             self.genome = [random.randint(0, CODON_SIZE)
-                           for i in range(length)]
+                           for i in xrange(length)]
         else:
             self.genome = genome
         if FITNESS_FUNCTION.maximise:
@@ -207,14 +204,13 @@ class Individual(object):
 
 def initialise_population(size=10):
     """Create a popultaion of size and return"""
-    return [Individual(None) for cnt in range(size)]
+    return [Individual(None) for cnt in xrange(size)]
 
 def print_stats(generation, individuals):
-    #TODO print to file
     def ave(values):
         return float(sum(values))/len(values)
     def std(values, ave):
-        return math.sqrt(float(sum([(value-ave)**2 for value in values]))/len(values))
+        return math.sqrt(float(sum((value-ave)**2 for value in values))/len(values))
 
     ave_fit = ave([i.fitness for i in individuals if i.phenotype is not None])
     std_fit = std([i.fitness for i in individuals if i.phenotype is not None], ave_fit)
@@ -229,7 +225,7 @@ def int_flip_mutation(individual):
     """Mutate the individual by randomly chosing a new int with
     probability p_mut. Works per-codon, hence no need for
     "within_used" option."""
-    for i in range(len(individual.genome)):
+    for i in xrange(len(individual.genome)):
         if random.random() < MUTATION_PROBABILITY:
             individual.genome[i] = random.randint(0,CODON_SIZE)
     return individual
@@ -323,13 +319,12 @@ def search_loop(max_generations, individuals, grammar, replacement, selection, f
     best_ever = max(individuals)
     individuals.sort()
     print_stats(1,individuals)
-    for generation in range(2,(max_generations+1)):
+    for generation in xrange(2,(max_generations+1)):
         individuals, best_ever = step(
             individuals, grammar, replacement, selection, fitness_function, best_ever)
         print_stats(generation, individuals)
     return best_ever
 
-# TODO can the functions be structured better? Make the selction sizes clearer
 CODON_SIZE = 127
 ELITE_SIZE = 1
 POPULATION_SIZE = 100
@@ -337,12 +332,9 @@ GENERATION_SIZE = 100
 GENERATIONS = 30
 MUTATION_PROBABILITY = 0.01
 CROSSOVER_PROBABILITY = 0.7
-GRAMMAR_FILE = "grammars/letter.bnf"
-FITNESS_FUNCTION = StringMatch("golden")
-# GRAMMAR_FILE = "grammars/arithmetic.pybnf"
-# FITNESS_FUNCTION = MaxFitness()
-# GRAMMAR_FILE = "grammars/boolean.pybnf"
-# FITNESS_FUNCTION = XORFitness()
+GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/letter.bnf", StringMatch("golden")
+#GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/arithmetic.pybnf", MaxFitness()
+#GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/boolean.pybnf", XORFitness()
 
 # Run program
 def mane():
