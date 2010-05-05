@@ -6,17 +6,20 @@
 
 EXPECTED_ARGS=1
 E_BADARGS=65
+TAG="TAG"
 
-if [ $# -le $EXPECTED_ARGS ]
+if [ $# -lt $EXPECTED_ARGS ]
 then
-  echo "Usage: `basename $0` version_number [TAG]"
+  echo "Usage: `basename $0` version_number [$TAG]"
   exit $E_BADARGS
 fi
 
 NAME="ponyge-$1"
 
 # Exporting the trunk to a zip
-svn export https://ponyge.googlecode.com/svn/trunk/ --username erik.hemberg $NAME | xargs zip -r $NAME.zip $NAME
+svn export https://ponyge.googlecode.com/svn/trunk/ --username erik.hemberg $NAME
+
+zip -r $NAME.zip $NAME
 
 if [ "$2" = $TAG ]; then
 # Tagging the release by copying the trunk to tags
