@@ -16,7 +16,10 @@ import sys
 import os
 import time
 
-from tkinter import *
+try:
+    from tkinter import *
+except ImportError:
+    from Tkinter import *
 from idlelib.Percolator import Percolator
 from idlelib.ColorDelegator import ColorDelegator
 from idlelib.textView import view_file # TextViewer
