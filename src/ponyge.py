@@ -4,7 +4,8 @@
 # Copyright (c) 2009 Erik Hemberg and James McDermott
 # Hereby licensed under the GNU GPL v3.
 
-import sys, copy, re, random, math
+#FIXME do not import operator globally but import it only for EvenNParityFitness
+import sys, copy, re, random, math, operator
 
 class Grammar(object):
     NT = "NT" # Non Terminal
@@ -175,6 +176,61 @@ class XORFitness():
                     fitness += 1
         return fitness
 
+class EvenNParityFitness():
+    """EvenNParity fitness function with python evaluation."""
+    maximise = True
+
+    def head(self, xs):
+         """Takes a list and returns the head"""
+         return xs[0]
+
+    def tail(self, xs):
+         """Takes a list and returns the list with its head removed."""
+         return xs[1:]
+
+    def nand(self, x,y):
+         return not operator.and_(x,y)
+
+    def nor(self, x,y):
+         return not operator.or_(x,y)
+
+    def _and(self, x,y):
+         return operator.and_(x,y)
+
+    def _or(self, x,y):
+         return operator.or_(x,y)
+
+    def __init__(self, size):
+         """0 is False, 1 is True. Lookup tables for parity input and
+         output. Size is the number of inputs"""
+         self._output = [None] * 2**size
+         self._input = []
+         for i in xrange(len(self._output)):
+              self._output[i] = (bin(i).count('1') % 2) == 0
+              self._input.append([False] * size)
+              for j, cnt in zip(bin(i)[2:][::-1], xrange(size)):
+                   if j == '1':
+                        self._input[-1][cnt] = True
+
+         self._input = tuple(self._input)
+         self._output =  tuple(self._output)
+
+    def __call__(self, candidate):
+         """Compare the output generated from the input by the
+         candidate with the output given by the input in the lookup
+         table."""
+         code = compile(candidate, '<string>', 'eval')
+         f = eval(code, locals())
+         fitness = 0
+         for y, x in zip(self._output, self._input):
+             try:
+                  if f(x) is y:
+                       fitness += 1
+             except (TypeError, IndexError, MemoryError) as e:
+                  fitness = default_fitness(self.maximise)
+                  break
+         return fitness
+
 class MaxFitness():
     """Maximisation with python evaluation."""
     maximise = True
@@ -223,7 +279,6 @@ def print_stats(generation, individuals):
     std_used_codons = std([i.used_codons for i in individuals
                            if i.phenotype is not None], ave_used_codons)
     print("Gen:%d evals:%d ave:%.2f+-%.3f aveUsedC:%.2f+-%.3f %s" % (generation, (GENERATION_SIZE*generation), ave_fit, std_fit, ave_used_codons, std_used_codons, individuals[0]))
-#    print_individuals(individuals)
 
 def default_fitness(maximise):
     if maximise:
@@ -327,7 +382,7 @@ def search_loop(max_generations, individuals, grammar, replacement, selection, f
     #Evaluate initial population
     evaluate_fitness(individuals, grammar, fitness_function)
     best_ever = max(individuals)
-    individuals.sort()
+    individuals.sort(reverse=True)
     print_stats(1,individuals)
     for generation in xrange(2,(max_generations+1)):
         individuals, best_ever = step(
@@ -342,6 +397,7 @@ GENERATION_SIZE = 100
 GENERATIONS = 30
 MUTATION_PROBABILITY = 0.01
 CROSSOVER_PROBABILITY = 0.7
+#GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/hofBoolean.pybnf", EvenNParityFitness(3)
 GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/letter.bnf", StringMatch("golden")
 #GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/arithmetic.pybnf", MaxFitness()
 #GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/boolean.pybnf", XORFitness()
@@ -357,4 +413,31 @@ def mane():
     print("Best" + str(best_ever))
 
 if __name__ == "__main__":
-    mane()
+     import getopt
+     try:
+          #FIXME help option
+          print(sys.argv)
+          opts, args = getopt.getopt(sys.argv[1:], "p:g:e:m:x:b:f:", ["population", "generations", "elite_size", "mutation", "crossover", "bnf_grammar", "fitness_function"])
+     except getopt.GetoptError, err:
+          print(str(err))
+          #FIXME usage
+          sys.exit(2)
+     for o, a in opts:
+          if o in ("-p", "--population"):
+               POPULATION_SIZE = int(a)
+               GENERATION_SIZE = int(a)
+          elif o in ("-g", "--generations"):
+               GENERATIONS = int(a)
+          elif o in ("-e", "--elite_size"):
+               ELITE_SIZE = int(a)
+          elif o in ("-m", "--mutation"):
+               MUTATION_PROBABILITY = float(a)
+          elif o in ("-x", "--crossover"):
+               CROSSOVER_PROBABILITY = float(a)
+          elif o in ("-b", "--bnf_grammar"):
+               GRAMMAR_FILE = a
+          elif o in ("-f", "--fitness_function"):
+               FITNESS_FUNCTION = eval(a)
+          else:
+               assert False, "unhandeled option"
+     mane()

@@ -1,0 +1,5 @@
+<code> ::= lambda x: <element> 
+<bi_function> ::= self._and | self._or | self.nand | self.nor
+<list> ::= self.tail(<list>) | x 
+<element> ::= self.head(<list>) | reduce(<bi_function>, <list>) | <bi_function>(<element>,<element>)
+

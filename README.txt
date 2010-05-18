@@ -31,9 +31,15 @@ Each line of the output corresponds to a generation in the evolution,
 and tells you the generation number, number of fitness evaluations
 which have taken place, average fitness with standard deviation,
 average number of codons used (see any GE paper, eg those referenced
-below, for definition) with standard deviation, and the best
+below, for definition) with standard deviation and the best
 individual found so far. At the end, the best individual is printed
-out again.
+out again. 
+
+There are a number of flags that can be used for passing values via
+the command-line. For example, running the default problem for 10
+generations:
+
+$ ./ponyge.py -g 10
 
 
 Example Problems
@@ -72,6 +78,18 @@ function. Use the following grammar and fitness function:
 
 GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/boolean.pybnf", \
 XORFitness()
+
+EvenNParity
+---
+
+A standard genetic programming benchmark. The grammar specifies a list
+of N-inputs, and allows them to be combined using AND, OR, NOR and
+NAND, reduce(), head() and tail(). The aim is to evolve a function
+that outputs true if the parity of the inputs are even. Use the
+following grammar and fitness function for N=3:
+
+GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/hofBoolean.pybnf", \
+EvenNParityFitness(3)
 
 
 L-System
