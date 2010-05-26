@@ -67,6 +67,9 @@ class Grammar(object):
                 else:
                     raise ValueError("Each rule must be on one line")
 
+    def __str__(self):
+         return "%s %s %s %s" % (self.terminals, self.non_terminals, self.rules, self.start_rule)
+
     def generate(self, input, max_wraps=2):
         """Map input via rules to output. Returns output and used_input"""
         used_input = 0
@@ -76,7 +79,7 @@ class Grammar(object):
         unexpanded_symbols = [self.start_rule]
         while (wraps < max_wraps) and (len(unexpanded_symbols) > 0):
             # Wrap
-            if used_input % len(input) == 0 and used_input > 0:
+            if used_input % len(input) == 0 and used_input > 0 and len(production_choices) > 1:
                 wraps += 1
             # Expand a production
             current_symbol = unexpanded_symbols.pop(0)
@@ -248,6 +251,7 @@ class Individual(object):
         self.fitness = default_fitness(FITNESS_FUNCTION.maximise)
         self.phenotype = None
         self.used_codons = 0
+        self.compiled_phenotype = None
 
     def __lt__(self, other):
         if FITNESS_FUNCTION.maximise:
@@ -336,10 +340,13 @@ def onepoint_crossover(p, q, within_used=True):
 
 def evaluate_fitness(individuals, grammar, fitness_function):
     # Perform the mapping for each individual
-    for ind in individuals:
-        ind.phenotype, ind.used_codons = grammar.generate(ind.genome)
-        if ind.phenotype != None:
-            ind.evaluate(fitness_function)
+     for ind in individuals:
+          ind.phenotype, ind.used_codons = grammar.generate(ind.genome)
+          if ind.phenotype != None:
+               if not hasattr(fitness_function, "COEVOLUTION") or not fitness_function.COEVOLUTION:
+                    ind.evaluate(fitness_function)
+     if hasattr(fitness_function, "COEVOLUTION") and fitness_function.COEVOLUTION:
+          fitness_function.__call__(individuals)
 
 def interactive_evaluate_fitness(individuals, grammar, callback):
     # perform mapping, set dummy fitness
@@ -390,6 +397,7 @@ def search_loop(max_generations, individuals, grammar, replacement, selection, f
         print_stats(generation, individuals)
     return best_ever
 
+VERBOSE = False
 CODON_SIZE = 127
 ELITE_SIZE = 1
 POPULATION_SIZE = 100
@@ -406,6 +414,8 @@ GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/letter.bnf", StringMatch("golden")
 def mane():
     # Read grammar
     bnf_grammar = Grammar(GRAMMAR_FILE)
+    if VERBOSE:
+         print bnf_grammar
     # Create Individuals
     individuals = initialise_population(POPULATION_SIZE)
     # Loop
@@ -417,13 +427,15 @@ if __name__ == "__main__":
      try:
           #FIXME help option
           print(sys.argv)
-          opts, args = getopt.getopt(sys.argv[1:], "p:g:e:m:x:b:f:", ["population", "generations", "elite_size", "mutation", "crossover", "bnf_grammar", "fitness_function"])
+          opts, args = getopt.getopt(sys.argv[1:], "vp:g:e:m:x:b:f:", ["verbose", "population", "generations", "elite_size", "mutation", "crossover", "bnf_grammar", "fitness_function"])
      except getopt.GetoptError, err:
           print(str(err))
           #FIXME usage
           sys.exit(2)
      for o, a in opts:
-          if o in ("-p", "--population"):
+          if o in ("-v", "--verbose"):
+               VERBOSE = True
+          elif o in ("-p", "--population"):
                POPULATION_SIZE = int(a)
                GENERATION_SIZE = int(a)
           elif o in ("-g", "--generations"):
