@@ -48,10 +48,11 @@ class NPlayerIteratedPrisonersDilemmaFitness():
             try:
                 c = compile(individual.phenotype,'<string>','exec')
                 d = {}
-                exec c in d
+                exec(c, d)
                 individual.compiled_phenotype = d["f"]
             except TypeError as e:
                 print(e)
+                sys.exit(1)
 
         for individual in individuals:
             individual.fitness = 0
@@ -70,22 +71,19 @@ class NPlayerIteratedPrisonersDilemmaFitness():
     # players.
     def NIPD(self, players):
         # Each player's history is blank at the beginning.
-        history = {}
-        for player in players:
-            history[player] = []
+        history = [[] for player in players]
 
-        for r in xrange(self.number_of_rounds):
+        for r in range(self.number_of_rounds):
             moves = []
-            for player in players:
+            for i, player in enumerate(players):
                 # TODO optimise by avoiding this copy.
                 inputs = copy.copy(history)
-                del inputs[player]
-                _inputs = (history[player], inputs.values())
-                moves.append(player.compiled_phenotype(*_inputs))
+                del inputs[i]
+                moves.append(player.compiled_phenotype(history[i], inputs))
             ncooperators = moves.count(True)
-            for player, move in zip(players, moves):
+            for i, (player, move) in enumerate(zip(players, moves)):
                 # Save this player's move
-                history[player].append(move)
+                history[i].append(move)
                 # Calculate this player's payoff for this round. True
                 # means cooperate, False means defect.
                 if move:

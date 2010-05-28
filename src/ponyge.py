@@ -213,10 +213,10 @@ class EvenNParityFitness():
          output. Size is the number of inputs"""
          self._output = [None] * 2**size
          self._input = []
-         for i in xrange(len(self._output)):
+         for i in range(len(self._output)):
               self._output[i] = (bin(i).count('1') % 2) == 0
               self._input.append([False] * size)
-              for j, cnt in zip(bin(i)[2:][::-1], xrange(size)):
+              for j, cnt in zip(bin(i)[2:][::-1], range(size)):
                    if j == '1':
                         self._input[-1][cnt] = True
 
@@ -250,7 +250,7 @@ class Individual(object):
     def __init__(self, genome, length=100):
         if genome == None:
             self.genome = [random.randint(0, CODON_SIZE)
-                           for i in xrange(length)]
+                           for i in range(length)]
         else:
             self.genome = genome
         self.fitness = default_fitness(FITNESS_FUNCTION.maximise)
@@ -273,7 +273,7 @@ class Individual(object):
 
 def initialise_population(size=10):
     """Create a popultaion of size and return"""
-    return [Individual(None) for cnt in xrange(size)]
+    return [Individual(None) for cnt in range(size)]
 
 def print_stats(generation, individuals):
     def ave(values):
@@ -299,7 +299,7 @@ def int_flip_mutation(individual):
     """Mutate the individual by randomly chosing a new int with
     probability p_mut. Works per-codon, hence no need for
     "within_used" option."""
-    for i in xrange(len(individual.genome)):
+    for i in range(len(individual.genome)):
         if random.random() < MUTATION_PROBABILITY:
             individual.genome[i] = random.randint(0,CODON_SIZE)
     return individual
@@ -396,7 +396,7 @@ def search_loop(max_generations, individuals, grammar, replacement, selection, f
     best_ever = max(individuals)
     individuals.sort(reverse=True)
     print_stats(1,individuals)
-    for generation in xrange(2,(max_generations+1)):
+    for generation in range(2,(max_generations+1)):
         individuals, best_ever = step(
             individuals, grammar, replacement, selection, fitness_function, best_ever)
         print_stats(generation, individuals)
@@ -420,7 +420,7 @@ def mane():
     # Read grammar
     bnf_grammar = Grammar(GRAMMAR_FILE)
     if VERBOSE:
-         print bnf_grammar
+        print(bnf_grammar)
     # Create Individuals
     individuals = initialise_population(POPULATION_SIZE)
     # Loop
@@ -433,7 +433,7 @@ if __name__ == "__main__":
           #FIXME help option
           print(sys.argv)
           opts, args = getopt.getopt(sys.argv[1:], "vp:g:e:m:x:b:f:", ["verbose", "population", "generations", "elite_size", "mutation", "crossover", "bnf_grammar", "fitness_function"])
-     except getopt.GetoptError, err:
+     except getopt.GetoptError as err:
           print(str(err))
           #FIXME usage
           sys.exit(2)
