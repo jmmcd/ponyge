@@ -111,17 +111,20 @@ class Grammar(object):
     # scheme.
     def python_filter(self, txt):
         indent_level = 0
-        for i in xrange(len(txt) - 1):
-            tok = txt[i:i+2]
+        tmp = txt[:]
+        i = 0
+        while i < len(tmp):
+            tok = tmp[i:i+2]
             if tok == "{:":
                 indent_level += 1
             elif tok == ":}":
                 indent_level -= 1
             tabstr = "\n" + "  " * indent_level
             if tok == "{:" or tok == ":}":
-                txt = txt.replace(tok, tabstr, 1)
+                tmp = tmp.replace(tok, tabstr, 1)
+            i += 1
         # Strip superfluous blank lines.
-        txt = "\n".join([line for line in txt.split("\n")
+        txt = "\n".join([line for line in tmp.split("\n")
                          if line.strip() != ""])
         return txt
 
@@ -140,8 +143,9 @@ def eval_or_exec(s):
             # definitions, multiple lines, etc. Then we must use
             # exec(). Then we assume that s will define a variable
             # called "XXXeval_or_exec_outputXXX", and we'll use that.
-            exec(s)
-            retval = XXXeval_or_exec_outputXXX
+            d = {}
+            exec(s, d)
+            retval = d["XXXeval_or_exec_outputXXX"]
     except MemoryError:
         # Will be thrown by eval(s) or exec(s) if s contains over-deep
         # nesting (see http://bugs.python.org/issue3971). The amount
@@ -420,7 +424,7 @@ def mane():
     individuals = initialise_population(POPULATION_SIZE)
     # Loop
     best_ever = search_loop(GENERATIONS, individuals, bnf_grammar, generational_replacement, tournament_selection, FITNESS_FUNCTION)
-    print("Best" + str(best_ever))
+    print("Best " + str(best_ever))
 
 if __name__ == "__main__":
      import getopt
