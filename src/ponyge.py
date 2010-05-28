@@ -6,6 +6,7 @@
 
 #FIXME do not import operator globally but import it only for EvenNParityFitness
 import sys, copy, re, random, math, operator
+from NIPD import NPlayerIteratedPrisonersDilemmaFitness
 
 class Grammar(object):
     NT = "NT" # Non Terminal
