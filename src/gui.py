@@ -302,6 +302,8 @@ class GUI(object):
                 _drawing = drawing.Drawing(_lsystem, p_dict['depth'], max_length=8000)
                 _drawing.angle = p_dict['angle']
                 _drawing.step = p_dict['step_size']
+                _drawing.colour1 = p_dict['colour1']
+                _drawing.colour2 = p_dict['colour2']
                 _drawing.circle_angle = p_dict['circle_angle']
                 _drawing.draw(self.myt.index_to_pixel(i, "x") + self.myt.xside_box / 2.0,
                               self.myt.index_to_pixel(j, "y") + self.myt.yside_box / 2.0,

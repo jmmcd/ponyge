@@ -9,6 +9,7 @@
 import turtle
 import lsystem
 import re
+import math
 
 class Drawing(turtle.Turtle):
     """Class for drawing"""
@@ -59,13 +60,28 @@ class Drawing(turtle.Turtle):
     def X(self): #Do nothing
         pass
 
+    def n(self): # increase pen palette parameter
+        self.pen_colour += 0.2
+        self.pencolor(self.map_colour(self.pen_colour))
+
+    def m(self): # decrease pen palette parameter
+        self.pen_colour -= 0.2
+        self.pencolor(self.map_colour(self.pen_colour))
+
+    def N(self): # increase fill palette parameter
+        self.fill_colour += 0.2
+        self.fillcolor(self.map_colour(self.fill_colour))
+
+    def M(self): # decrease fill palette parameter
+        self.fill_colour -= 0.2
+        self.fillcolor(self.map_colour(self.fill_colour))
+
     def _push(self): #push the (position, heading) to the stack
         self.stack.append((self.position(),self.heading()))
 
     def _pop(self): #pop and set the (position, heading) from the stack
         item = self.stack.pop()
-        self.setposition(item[0])
-        self.setheading(item[1])
+        self.set_state(item)
 
     def __init__(self, l_system, depth, max_length=None):
         """Set the lsystem and the initial parameters"""
@@ -75,6 +91,8 @@ class Drawing(turtle.Turtle):
         self.STEP = 2
         self.ANGLE = 5
         self.step = 10
+        self.pen_colour = 0.0
+        self.fill_colour = 0.0
         self.circle_angle = 20.5
         self.angle = 60
         self.max_length = max_length
@@ -93,7 +111,11 @@ class Drawing(turtle.Turtle):
                        "D":self.D, 
                        "}":self.p,
                        "{":self.P,
-                       "a":self.a}
+                       "a":self.a,
+                       "n":self.n,
+                       "m":self.m,
+                       "N":self.N,
+                       "M":self.M}
         self.stack = []
         self.colors = []
 
@@ -126,6 +148,36 @@ class Drawing(turtle.Turtle):
                     self._draw(rules[b], rules)
                 except:
                     print("Passing:",b,rules[b])
+
+    def set_state(self, state):
+        self.setposition(state["position"])
+        self.setheading(state["heading"])
+        self.pen_colour = state["pen_colour"]
+        self.fill_colour = state["fill_colour"]
+
+    def make_state(self):
+        d = {}
+        d["position"] = self.position()
+        d["heading"] = self.heading()
+        d["pen_colour"] = self.pen_colour
+        d["fill_colour"] = self.fill_colour
+        return d
+
+    # We use a similar palette scheme to that of Hart (EvoMUSART
+    # 2007). There are two "anchor colours", set as constants in the
+    # input string. There is a single palette parameter. Large
+    # positive values give a saturated version of colour1 (tending to
+    # white), small positive values a dark version tending to black.
+    # Negative values work similarly for colour2.
+    def map_colour(self, col):
+        print("col = " + str(col))
+        # Sigmoid maps values from [0, inf] to [0, 1]
+        def sigmoid(val):
+            return 1.0 / (1 + math.exp(val * abs(col) / 255.0))
+        if col < 0:
+            return tuple(map(sigmoid, self.colour2))
+        else:
+            return tuple(map(sigmoid, self.colour1))
 
 def dragon_curve(depth=3):
     """draw a dragon curve Dragon curve angle=60"""
@@ -167,13 +219,16 @@ def parse_phenotype(phenotype):
     angle=[\d]*\.?[\d]+ 
     depth=\d+ 
     step_size=\d+
+    colour1=\d+ \d+ \d+
+    colour2=\d+ \d+ \d+
     circle_angle=[\d]*\.?[\d]+ 
     axiom=[-+fF\[\]CSsXAD\{\}a]+
     [sSaADfFCX]=[-+fF\[\]CSsXAD\{\}a]+"""
     #TODO can I get the keys for the rules allowed by drawing
     REGEX_FLOAT = '\d+\.?\d+'
     REGEX_INTEGER = '\d+'
-    REGEX_RULE_KEYS = '[-+fF\[\]CSsXAD\{\}a]+'
+    REGEX_3_INTEGER = '(\d+) (\d+) (\d+)'
+    REGEX_RULE_KEYS = '[-+fF\[\]CSsXADnmNM\{\}a]+'
     REGEX_RULE = '^(%s)=(%s)$'%(REGEX_RULE_KEYS,REGEX_RULE_KEYS)
     REGEX_AXIOM = 'axiom=(%s)'%(REGEX_RULE_KEYS)
     lines = phenotype.split(':')
@@ -182,10 +237,12 @@ def parse_phenotype(phenotype):
     p_dict['angle'] = float(re.search(REGEX_FLOAT, lines[0]).group(0))
     p_dict['depth'] = int(re.search(REGEX_INTEGER, lines[1]).group(0))
     p_dict['step_size'] = int(re.search(REGEX_INTEGER, lines[2]).group(0))
-    p_dict['circle_angle'] = float(re.search(REGEX_FLOAT, lines[3]).group(0))
-    p_dict['axiom'] = re.search(REGEX_AXIOM,lines[4]).group(1)
+    p_dict['colour1'] = tuple(map(int, re.search(REGEX_3_INTEGER, lines[3]).group(1, 2, 3)))
+    p_dict['colour2'] = tuple(map(int, re.search(REGEX_3_INTEGER, lines[4]).group(1, 2, 3)))
+    p_dict['circle_angle'] = float(re.search(REGEX_FLOAT, lines[5]).group(0))
+    p_dict['axiom'] = re.search(REGEX_AXIOM,lines[6]).group(1)
     rules = []
-    for line in lines[5:]:
+    for line in lines[7:]:
         match = re.search(REGEX_RULE, line)
         if match is not None:
             rules.append((match.group(1), match.group(2)))
@@ -197,12 +254,14 @@ if __name__ == "__main__":
 #Used for doodling drawings
 #Spirograph
 #    _lsystem = lsystem.LSystem('DC',[('C','CaD++[sCDsCD]++CaD'),('F','')])
-    phenotype = 'angle=60\ndepth=2\nstep_size=10\ncircle_angle=20.5\naxiom=F\nF=F-F++F-F'
+    phenotype = 'angle=60:depth=2:step_size=10:colour1=200 50 50:colour2=50 200 50:circle_angle=20.5:axiom=F:F=mmF-F++F-F'
     p_dict = parse_phenotype(phenotype)
     _lsystem = lsystem.LSystem(p_dict['axiom'],p_dict['rules'])
     _drawing = Drawing(_lsystem, p_dict['depth'])
     _drawing.angle = p_dict['angle']
     _drawing.step = p_dict['step_size']
+    _drawing.colour1 = p_dict['colour1']
+    _drawing.colour2 = p_dict['colour2']
     _drawing.circle_angle = p_dict['circle_angle']
     _drawing.STEP = 2
     _drawing.ANGLE = 5
