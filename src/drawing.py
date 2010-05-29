@@ -2,9 +2,13 @@
 
 # Draw an lsystem
 
-#TODO Color
-#TODO Scale
+#TODO Scale -- not needed since saves are in .eps?
 #TODO Line Width
+#TODO Rename "redisplay" to "back" and allow it to go to previous generations as well.
+#TODO Reverse an individual's string? (turn brackets around)
+#TODO Alter an individual's palette
+#FIXME Change the elitism -- seems one individual is always reproduced
+#but doesn't contribute genes?
 
 import turtle
 import lsystem
@@ -77,11 +81,10 @@ class Drawing(turtle.Turtle):
         self.fillcolor(self.map_colour(self.fill_colour))
 
     def _push(self): #push the (position, heading) to the stack
-        self.stack.append((self.position(),self.heading()))
+        self.stack.append(self.make_state())
 
     def _pop(self): #pop and set the (position, heading) from the stack
-        item = self.stack.pop()
-        self.set_state(item)
+        self.set_state(self.stack.pop())
 
     def __init__(self, l_system, depth, max_length=None):
         """Set the lsystem and the initial parameters"""
@@ -117,7 +120,6 @@ class Drawing(turtle.Turtle):
                        "N":self.N,
                        "M":self.M}
         self.stack = []
-        self.colors = []
 
     def draw(self, x, y, width, heigth):
         """Draw the string. The l-system axiom is extended to the specified depth"""
@@ -141,13 +143,9 @@ class Drawing(turtle.Turtle):
     def _draw(self, commands, rules):
         """Call the function in the command specified by the passed in rules"""
         for b in commands:
-            try:
-                rules[b]()
-            except TypeError:
-                try:
-                    self._draw(rules[b], rules)
-                except:
-                    print("Passing:",b,rules[b])
+            # Removed exception-handling -- if there's a bad command,
+            # we want to know about it.
+            rules[b]()
 
     def set_state(self, state):
         self.setposition(state["position"])
@@ -165,12 +163,12 @@ class Drawing(turtle.Turtle):
 
     # We use a similar palette scheme to that of Hart (EvoMUSART
     # 2007). There are two "anchor colours", set as constants in the
-    # input string. There is a single palette parameter. Large
-    # positive values give a saturated version of colour1 (tending to
-    # white), small positive values a dark version tending to black.
-    # Negative values work similarly for colour2.
+    # input string. There is a single palette parameter which varies
+    # during a drawing (n and m, N and M commands). Large positive
+    # values give a saturated version of colour1 (tending to white),
+    # small positive values a dark version tending to black. Negative
+    # values work similarly for colour2.
     def map_colour(self, col):
-        print("col = " + str(col))
         # Sigmoid maps values from [0, inf] to [0, 1]
         def sigmoid(val):
             return 1.0 / (1 + math.exp(val * abs(col) / 255.0))

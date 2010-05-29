@@ -202,6 +202,9 @@ class GUI(object):
         self.save_btn = Button(btn_frame, text=" SAVE ", font=btnfont, fg = "white",
                                 disabledforeground = "#fed", command=self.savecb)
         self.save_btn.pack(side=LEFT, fill=X, expand=1)
+        self.redisplay_btn = Button(btn_frame, text=" REDISPLAY ", font=btnfont, fg = "white",
+                                disabledforeground = "#fed", command=self.redisplaycb)
+        self.redisplay_btn.pack(side=LEFT, fill=X, expand=1)
         self.stop_btn = Button(btn_frame, text=" STOP ",  font=btnfont, fg = "white",
                                 disabledforeground = "#fed", command = self.stopIt)
         self.stop_btn.pack(side=LEFT, fill=X, expand=1)
@@ -219,7 +222,7 @@ class GUI(object):
         Percolator(text).insertfilter(ColorDelegator())
         self.dirty = False
         self.exitflag = False
-        self.configGUI(NORMAL, DISABLED, DISABLED, DISABLED, DISABLED, INSTRUCTIONS)
+        self.configGUI(NORMAL, DISABLED, DISABLED, DISABLED, DISABLED, DISABLED, INSTRUCTIONS)
         self.state = STARTUP
         self.nextGeneration()
 
@@ -229,8 +232,31 @@ class GUI(object):
         print(str(ij))
         self.setSelected(*ij)
 
+    # clear screen, draw individual(i, j) again in the centre
+    def rightclickcb(self, x, y):
+        print("self.rightclickcb: x = " + str(x) + " " + str(y))
+        ij = self.myt.get_i_j(x, y)
+        print(str(ij))
+        i, j = ij
+        self.refreshCanvas()
+        self.dirty = True
+        turtle.TurtleScreen._RUNNING = True
+        self.screen.clear()
+        self.screen.mode("standard")
+        self.state = RUNNING
+        phenotype = self.ge.individuals[i*self.n+j].phenotype
+        self.draw_phenotype(phenotype,
+                            self.myt.index_to_pixel(self.n // 2, "x") + self.myt.xside_box / 2.0,
+                            self.myt.index_to_pixel(self.m // 2, "y") + self.myt.yside_box / 2.0,
+                            self.myt.xside,
+                            self.myt.yside)
+        self.set_listeners()
+
     def spacecb(self):
         self.nextGeneration()
+
+    def redisplaycb(self):
+        self.nextGeneration(False)
 
     def savecb(self):
         file_name = 'output_ponyGEGUI_'+str(time.time())
@@ -238,12 +264,12 @@ class GUI(object):
         outfile = open(file_name+'.eps','a')
         outfile.write(self.scanvas.postscript())
         outfile.close()
-
+        self.configGUI(NORMAL, NORMAL, NORMAL, NORMAL, DISABLED, DISABLED, "Saved")
     def _destroy(self):
         self.root.destroy()
         sys.exit()
 
-    def configGUI(self, menu, next, save, stop, clear, txt="", color="blue"):
+    def configGUI(self, menu, next, save, redisplay, stop, clear, txt="", color="blue"):
 
         self.next_btn.config(state=next)
         if next==NORMAL:
@@ -256,6 +282,12 @@ class GUI(object):
             self.save_btn.config(bg="#d00")
         else:
             self.save_btn.config(bg="#fca")
+
+        self.redisplay_btn.config(state=redisplay)
+        if redisplay==NORMAL:
+            self.redisplay_btn.config(bg="#d00")
+        else:
+            self.redisplay_btn.config(bg="#fca")
 
         self.stop_btn.config(state=stop)
         if stop==NORMAL:
@@ -272,7 +304,7 @@ class GUI(object):
         #self.screen.mode("standard")
         self.dirty=False
 
-    def nextGeneration(self):
+    def nextGeneration(self, step=True):
         self.refreshCanvas()
         self.dirty = True
         turtle.TurtleScreen._RUNNING = True
@@ -281,11 +313,13 @@ class GUI(object):
         self.state = RUNNING
 
         self.selected = []
-        self.configGUI(DISABLED, DISABLED, DISABLED, NORMAL, DISABLED,
+        self.configGUI(DISABLED, DISABLED, DISABLED, DISABLED, NORMAL, DISABLED,
                        "Drawing, please wait...", "red")
 
-        self.ge.set_fitnesses(self.fitness)
-        self.ge.step()
+        if step:
+            self.ge.set_fitnesses(self.fitness)
+            self.ge.step()
+
         self.myt = MyTurtle(650, 650, 3, 3)
         turtle.clear()
         for i in range(self.n):
@@ -294,27 +328,36 @@ class GUI(object):
                 #Drawing l-system                
 #                phenotype = 'angle=6%d\ndepth=%d\nstep_size=10\ncircle_angle=20.5\naxiom=F\nF=F-F++F-F'%((i*j),(i*j))
                 phenotype = self.ge.individuals[i*self.n+j].phenotype
-                if phenotype is None:
-                    continue
-                print(phenotype)
-                p_dict = drawing.parse_phenotype(phenotype)
-                _lsystem = lsystem.LSystem(p_dict['axiom'],p_dict['rules'])
-                _drawing = drawing.Drawing(_lsystem, p_dict['depth'], max_length=8000)
-                _drawing.angle = p_dict['angle']
-                _drawing.step = p_dict['step_size']
-                _drawing.colour1 = p_dict['colour1']
-                _drawing.colour2 = p_dict['colour2']
-                _drawing.circle_angle = p_dict['circle_angle']
-                _drawing.draw(self.myt.index_to_pixel(i, "x") + self.myt.xside_box / 2.0,
-                              self.myt.index_to_pixel(j, "y") + self.myt.yside_box / 2.0,
-                              self.myt.xside,
-                              self.myt.yside)
-        
-        self.configGUI(NORMAL, NORMAL, NORMAL, DISABLED, INSTRUCTIONS)
+                self.draw_phenotype(phenotype, 
+                                    self.myt.index_to_pixel(i, "x") + self.myt.xside_box / 2.0,
+                                    self.myt.index_to_pixel(j, "y") + self.myt.yside_box / 2.0,
+                                    self.myt.xside,
+                                    self.myt.yside)
+
+        self.configGUI(NORMAL, NORMAL, NORMAL, NORMAL, DISABLED, DISABLED, INSTRUCTIONS)
+        self.set_listeners()
+
+    def set_listeners(self):
         turtle.onscreenclick(self.clickcb, 1)
+        turtle.onscreenclick(self.rightclickcb, 3)
         turtle.onkey(self.spacecb, "space")
         turtle.onkey(self.savecb, "s")
+        turtle.onkey(self.redisplaycb, "r")
         turtle.listen()
+
+    def draw_phenotype(self, phenotype, x, y, w, h):
+        if phenotype is None:
+            return
+        print(phenotype)
+        p_dict = drawing.parse_phenotype(phenotype)
+        _lsystem = lsystem.LSystem(p_dict['axiom'],p_dict['rules'])
+        _drawing = drawing.Drawing(_lsystem, p_dict['depth'], max_length=8000)
+        _drawing.angle = p_dict['angle']
+        _drawing.step = p_dict['step_size']
+        _drawing.colour1 = p_dict['colour1']
+        _drawing.colour2 = p_dict['colour2']
+        _drawing.circle_angle = p_dict['circle_angle']
+        _drawing.draw(x, y, w, h)
 
     def setSelected(self, i, j):
         if self.fitness[i*self.n + j] > 0.0:
@@ -333,13 +376,13 @@ class GUI(object):
         self.refreshCanvas()
         self.screen._delete("all")
         self.scanvas.config(cursor="")
-        self.configGUI(NORMAL, NORMAL, NORMAL, DISABLED, DISABLED)
+        self.configGUI(NORMAL, NORMAL, NORMAL, NORMAL, DISABLED, DISABLED)
 
     def stopIt(self):
         if self.exitflag:
             self.clearCanvas()
             self.exitflag = False
-            self.configGUI(NORMAL, NORMAL, NORMAL, DISABLED, NORMAL,
+            self.configGUI(NORMAL, NORMAL, NORMAL, NORMAL, DISABLED, NORMAL,
                            "STOPPED!", "red")
             turtle.TurtleScreen._RUNNING = False
             #print "stopIT: exitflag = True"
