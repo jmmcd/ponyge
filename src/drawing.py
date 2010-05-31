@@ -7,8 +7,16 @@
 #TODO Rename "redisplay" to "back" and allow it to go to previous generations as well.
 #TODO Reverse an individual's string? (turn brackets around)
 #TODO Alter an individual's palette
-#FIXME Change the elitism -- seems one individual is always reproduced
-#but doesn't contribute genes?
+#TODO Angle steps should be multiples of initial angle?
+
+# FIXME When saving postscript, all the graphics are saved, but the
+# bounding box is set to the visible window. It's possible to edit the
+# .eps to fix the bounding box and see the entire picture. But it
+# would be better to set options to the postscript call to set the
+# bounding box correctly before writing.
+
+# FIXME Change the elitism -- seems one individual is always
+# reproduced but doesn't contribute genes?
 
 import turtle
 import lsystem
@@ -47,11 +55,11 @@ class Drawing(turtle.Turtle):
     def s(self): #decrease step size
         self.step -= self.STEP
 
-    def P(self): #begin polygon
+    def polygon_begin(self): #begin polygon
         self.begin_poly()
         self.begin_fill()
 
-    def p(self): #end polygon
+    def polygon_end(self): #end polygon
         self.end_poly()
         self.end_fill()
 
@@ -80,6 +88,18 @@ class Drawing(turtle.Turtle):
         self.fill_colour -= 0.2
         self.fillcolor(self.map_colour(self.fill_colour))
 
+    def w(self): # decrease pen width
+        self.pen_width /= 1.1
+        if self.pen_width < 1:
+            self.pen_width = 1
+        self.width(self.pen_width)
+
+    def W(self): # increase pen width
+        self.pen_width *= 1.1
+        if self.pen_width > 10:
+            self.pen_width = 10
+        self.width(self.pen_width)
+
     def _push(self): #push the (position, heading) to the stack
         self.stack.append(self.make_state())
 
@@ -98,6 +118,7 @@ class Drawing(turtle.Turtle):
         self.fill_colour = 0.0
         self.circle_angle = 20.5
         self.angle = 60
+        self.pen_width = 3.0
         self.max_length = max_length
         #Avalible rules
         self._rules = {"-":self.l, 
@@ -110,15 +131,18 @@ class Drawing(turtle.Turtle):
                        "S":self.S, 
                        "s":self.s, 
                        "X":self.X, 
+                       "{":self.polygon_begin,
+                       "}":self.polygon_end,
                        "A":self.a, 
                        "D":self.D, 
-                       "}":self.p,
-                       "{":self.P,
                        "a":self.a,
                        "n":self.n,
                        "m":self.m,
                        "N":self.N,
-                       "M":self.M}
+                       "M":self.M,
+                       "w":self.w,
+                       "W":self.W
+                       }
         self.stack = []
 
     def draw(self, x, y, width, heigth):
@@ -221,12 +245,12 @@ def parse_phenotype(phenotype):
     colour2=\d+ \d+ \d+
     circle_angle=[\d]*\.?[\d]+ 
     axiom=[-+fF\[\]CSsXAD\{\}a]+
-    [sSaADfFCX]=[-+fF\[\]CSsXAD\{\}a]+"""
+    [sSaADfFCX]=[-+fF\[\]CSsXADnmNM\{\}\(\)awW]+"""
     #TODO can I get the keys for the rules allowed by drawing
     REGEX_FLOAT = '\d+\.?\d+'
     REGEX_INTEGER = '\d+'
     REGEX_3_INTEGER = '(\d+) (\d+) (\d+)'
-    REGEX_RULE_KEYS = '[-+fF\[\]CSsXADnmNM\{\}a]+'
+    REGEX_RULE_KEYS = '[-+fF\[\]CSsXADnmNM\{\}\(\)awW]+'
     REGEX_RULE = '^(%s)=(%s)$'%(REGEX_RULE_KEYS,REGEX_RULE_KEYS)
     REGEX_AXIOM = 'axiom=(%s)'%(REGEX_RULE_KEYS)
     lines = phenotype.split(':')
@@ -251,8 +275,8 @@ def parse_phenotype(phenotype):
 if __name__ == "__main__":
 #Used for doodling drawings
 #Spirograph
-#    _lsystem = lsystem.LSystem('DC',[('C','CaD++[sCDsCD]++CaD'),('F','')])
-    phenotype = 'angle=60:depth=2:step_size=10:colour1=200 50 50:colour2=50 200 50:circle_angle=20.5:axiom=F:F=mmF-F++F-F'
+#    _lsystem = lsystem.LSystem('DCa',[('C','CaD++[sCDsCD]++CaD'),('F',''))
+    phenotype = 'angle=60:depth=2:step_size=10:colour1=200 50 50:colour2=50 200 50:circle_angle=20.5:axiom=F:F=mmmmPF-F++F-Fp'
     p_dict = parse_phenotype(phenotype)
     _lsystem = lsystem.LSystem(p_dict['axiom'],p_dict['rules'])
     _drawing = Drawing(_lsystem, p_dict['depth'])

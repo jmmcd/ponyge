@@ -10,8 +10,8 @@
 <rule> ::= <char>=<rhs>
 <code> ::= <char> | <char><code>
 <rhs> ::= <code> | {<code>} | [<code>]
-# <char> ::= f | F | { | } | [ | ] | - | + | C | S | s | X | A | D | a | n | m | N | M
-<char> ::= f | F | - | + | C | D | FD | n | m | N | M
+# <char> ::= f | F | { | } | [ | ] | - | + | C | S | s | X | A | D | a | n | m | N | M | w | W
+<char> ::= f | F | - | + | C | D | FD | n | m | N | M | w | W
 <angle> ::= 15 | 25 | 60
 <depth> ::=  2 | 3 | 4 | 5
 <stepsize> ::= 10 | 16
