@@ -89,15 +89,15 @@ class Drawing(turtle.Turtle):
         self.fillcolor(self.map_colour(self.fill_colour))
 
     def w(self): # decrease pen width
-        self.pen_width /= 1.1
-        if self.pen_width < 1:
-            self.pen_width = 1
+        self.pen_width /= 1.05
+        if self.pen_width < 0.5:
+            self.pen_width = 0.5
         self.width(self.pen_width)
 
     def W(self): # increase pen width
-        self.pen_width *= 1.1
-        if self.pen_width > 10:
-            self.pen_width = 10
+        self.pen_width *= 1.05
+        if self.pen_width > 7:
+            self.pen_width = 7
         self.width(self.pen_width)
 
     def _push(self): #push the (position, heading) to the stack
@@ -121,20 +121,20 @@ class Drawing(turtle.Turtle):
         self.pen_width = 3.0
         self.max_length = max_length
         #Avalible rules
-        self._rules = {"-":self.l, 
-                       "+":self.r, 
-                       "f":self.f, 
-                       "F":self.F, 
-                       "[":self._push, 
-                       "]":self._pop, 
-                       "C":self.C, 
-                       "S":self.S, 
-                       "s":self.s, 
-                       "X":self.X, 
+        self._rules = {"-":self.l,
+                       "+":self.r,
+                       "f":self.f,
+                       "F":self.F,
+                       "[":self._push,
+                       "]":self._pop,
+                       "C":self.C,
+                       "S":self.S,
+                       "s":self.s,
+                       "X":self.X,
                        "{":self.polygon_begin,
                        "}":self.polygon_end,
-                       "A":self.a, 
-                       "D":self.D, 
+                       "A":self.a,
+                       "D":self.D,
                        "a":self.a,
                        "n":self.n,
                        "m":self.m,
@@ -154,7 +154,7 @@ class Drawing(turtle.Turtle):
         self.setposition(x,y)
         while not self.l_system.done and self.l_system.generation < self.depth:
             self.l_system.step()
-            if (self.max_length is not None and 
+            if (self.max_length is not None and
                 len(self.l_system.string) > self.max_length):
                 print("Exceeded maximum length: will not draw L-system")
                 self.hideturtle()
@@ -238,12 +238,12 @@ def curve_branch(depth=3):
 def parse_phenotype(phenotype):
     """Parses a phenotype: (The keys for the rules are allowed in the
     axiom or rules)
-    angle=[\d]*\.?[\d]+ 
-    depth=\d+ 
+    angle=[\d]*\.?[\d]+
+    depth=\d+
     step_size=\d+
     colour1=\d+ \d+ \d+
     colour2=\d+ \d+ \d+
-    circle_angle=[\d]*\.?[\d]+ 
+    circle_angle=[\d]*\.?[\d]+
     axiom=[-+fF\[\]CSsXAD\{\}a]+
     [sSaADfFCX]=[-+fF\[\]CSsXADnmNM\{\}\(\)awW]+"""
     #TODO can I get the keys for the rules allowed by drawing
@@ -265,6 +265,7 @@ def parse_phenotype(phenotype):
     p_dict['axiom'] = re.search(REGEX_AXIOM,lines[6]).group(1)
     rules = []
     for line in lines[7:]:
+        print("line ", line)
         match = re.search(REGEX_RULE, line)
         if match is not None:
             rules.append((match.group(1), match.group(2)))
@@ -276,7 +277,7 @@ if __name__ == "__main__":
 #Used for doodling drawings
 #Spirograph
 #    _lsystem = lsystem.LSystem('DCa',[('C','CaD++[sCDsCD]++CaD'),('F',''))
-    phenotype = 'angle=60:depth=2:step_size=10:colour1=200 50 50:colour2=50 200 50:circle_angle=20.5:axiom=F:F=mmmmPF-F++F-Fp'
+    phenotype = 'angle=60:depth=4:step_size=10:colour1=200 50 50:colour2=50 200 50:circle_angle=20.5:axiom=F:F=mmmm[F-F++F-F]'
     p_dict = parse_phenotype(phenotype)
     _lsystem = lsystem.LSystem(p_dict['axiom'],p_dict['rules'])
     _drawing = Drawing(_lsystem, p_dict['depth'])
