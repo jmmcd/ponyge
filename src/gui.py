@@ -339,6 +339,13 @@ class GUI(object):
 
     def set_listeners(self):
         turtle.onscreenclick(self.clickcb, 1)
+        # In OSX, ctrl-click doesn't give a button-3 click. Instead,
+        # trackpad users have to enable secondary click in system
+        # preferences. Then, right-clicking on trackpad generates a
+        # button-2 click. I don't know what one-button mouse users can
+        # do?
+        turtle.onscreenclick(self.rightclickcb, 2)
+        # On Linux, right-click generates a button-3 click.
         turtle.onscreenclick(self.rightclickcb, 3)
         turtle.onkey(self.spacecb, "space")
         turtle.onkey(self.savecb, "s")
