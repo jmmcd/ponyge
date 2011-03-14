@@ -281,7 +281,7 @@ def print_stats(generation, individuals):
     def std(values, ave):
         return math.sqrt(float(sum((value-ave)**2 for value in values))/len(values))
 
-    valid_inds = [i in individuals if i.phenotype is not None]
+    valid_inds = [i for i in individuals if i.phenotype is not None]
     if len(valid_inds) == 0:
         fitness_vals = [0]
         used_codon_vals = [0]
