@@ -281,13 +281,20 @@ def print_stats(generation, individuals):
     def std(values, ave):
         return math.sqrt(float(sum((value-ave)**2 for value in values))/len(values))
 
-    ave_fit = ave([i.fitness for i in individuals if i.phenotype is not None])
-    std_fit = std([i.fitness for i in individuals if i.phenotype is not None], ave_fit)
-    ave_used_codons = ave([i.used_codons for i in individuals
-                           if i.phenotype is not None])
-    std_used_codons = std([i.used_codons for i in individuals
-                           if i.phenotype is not None], ave_used_codons)
-    print("Gen:%d evals:%d ave:%.2f+-%.3f aveUsedC:%.2f+-%.3f %s" % (generation, (GENERATION_SIZE*generation), ave_fit, std_fit, ave_used_codons, std_used_codons, individuals[0]))
+    valid_inds = [i in individuals if i.phenotype is not None]
+    if len(valid_inds) == 0:
+        fitness_vals = [0]
+        used_codon_vals = [0]
+    else:
+        fitness_vals = [i.fitness for i in valid_inds]
+        used_codon_vals = [i.used_codons for i in valid_inds]
+    ave_fit = ave(fitness_vals)
+    std_fit = std(fitness_vals, ave_fit)
+    ave_used_codons = ave(used_codon_vals)
+    std_used_codons = std(used_codon_vals, ave_used_codons)
+    print("Gen:%d evals:%d ave:%.2f+-%.3f aveUsedC:%.2f+-%.3f %s" % (
+            generation, (GENERATION_SIZE*generation), ave_fit, std_fit,
+            ave_used_codons, std_used_codons, individuals[0]))
 
 def default_fitness(maximise):
     if maximise:

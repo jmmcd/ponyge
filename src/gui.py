@@ -53,9 +53,9 @@ class GE(object):
         ponyge.GRAMMAR_FILE = "grammars/lsystem.bnf"
         ponyge.POPULATION_SIZE = 9
         ponyge.GENERATION_SIZE = 9
-        ponyge.ELITE_SIZE = 1
+        ponyge.ELITE_SIZE = 0
         ponyge.MUTATION_PROBABILITY = 0.01
-        ponyge.CROSSOVER_PROBABILITY = 0.7
+        ponyge.CROSSOVER_PROBABILITY = 1.0 - ponyge.MUTATION_PROBABILITY
         self.grammar = ponyge.Grammar(ponyge.GRAMMAR_FILE)
         self.individuals = ponyge.initialise_population(ponyge.POPULATION_SIZE)
         self.replacement = ponyge.generational_replacement
@@ -325,10 +325,10 @@ class GUI(object):
         for i in range(self.n):
             for j in range(self.m):
                 self.setUnselected(i, j)
-                #Drawing l-system                
+                #Drawing l-system
 #                phenotype = 'angle=6%d\ndepth=%d\nstep_size=10\ncircle_angle=20.5\naxiom=F\nF=F-F++F-F'%((i*j),(i*j))
                 phenotype = self.ge.individuals[i*self.n+j].phenotype
-                self.draw_phenotype(phenotype, 
+                self.draw_phenotype(phenotype,
                                     self.myt.index_to_pixel(i, "x") + self.myt.xside_box / 2.0,
                                     self.myt.index_to_pixel(j, "y") + self.myt.yside_box / 2.0,
                                     self.myt.xside,

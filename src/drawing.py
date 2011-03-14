@@ -51,9 +51,13 @@ class Drawing(turtle.Turtle):
 
     def S(self): #increase step size
         self.step += self.STEP
+        if self.step >= 20:
+            self.step = 20
 
     def s(self): #decrease step size
         self.step -= self.STEP
+        if self.step <= 2:
+            self.step = 2
 
     def polygon_begin(self): #begin polygon
         self.begin_poly()
@@ -96,8 +100,8 @@ class Drawing(turtle.Turtle):
 
     def W(self): # increase pen width
         self.pen_width *= 1.05
-        if self.pen_width > 7:
-            self.pen_width = 7
+        if self.pen_width > 3:
+            self.pen_width = 3
         self.width(self.pen_width)
 
     def _push(self): #push the (position, heading) to the stack
@@ -133,7 +137,7 @@ class Drawing(turtle.Turtle):
                        "X":self.X,
                        "{":self.polygon_begin,
                        "}":self.polygon_end,
-                       "A":self.a,
+                       "A":self.A,
                        "D":self.D,
                        "a":self.a,
                        "n":self.n,
@@ -277,6 +281,7 @@ if __name__ == "__main__":
 #Used for doodling drawings
 #Spirograph
 #    _lsystem = lsystem.LSystem('DCa',[('C','CaD++[sCDsCD]++CaD'),('F',''))
+    # phenotype = 'angle=90:depth=0:step_size=10:colour1=200 50 50:colour2=50 200 50:circle_angle=20.5:axiom=F[[F]+F]+++F:F=mmmm[F-F++F-F]'
     phenotype = 'angle=60:depth=4:step_size=10:colour1=200 50 50:colour2=50 200 50:circle_angle=20.5:axiom=F:F=mmmm[F-F++F-F]'
     p_dict = parse_phenotype(phenotype)
     _lsystem = lsystem.LSystem(p_dict['axiom'],p_dict['rules'])
