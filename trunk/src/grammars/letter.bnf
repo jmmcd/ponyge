@@ -1,0 +1,7 @@
+# Grammar for lower case letters
+<string> ::= <letter>|<letter><string>
+<letter> ::= <vowel>|<consonant>|<space>
+<space> ::= _
+# Vowels and consonats
+<vowel> ::= a|e|o|i|u|y
+<consonant> ::= g|v|w|b|c|d|l|n

@@ -1,0 +1,9 @@
+# Demonstrates how to use statements in PonyGE grammars. Use {: and :}
+# as special tokens indicating blocks. Define a variable
+# XXXeval_or_exec_outputXXX which will be your return value.
+
+<code> ::= def f(x):{:return <expr>:}XXXeval_or_exec_outputXXX=sum([f(x) for x in range(10)])
+
+<expr> ::= (<expr> <op> <expr>) | <val>
+<op> ::= * | + | -
+<val> ::= 0 | 1 | 2 | 3 | 4 | 5

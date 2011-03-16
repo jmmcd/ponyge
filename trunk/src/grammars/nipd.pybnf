@@ -1,0 +1,6 @@
+<code> ::= def f(me, others):{:return <bool>:}
+<bool> ::= <alwaysC> | <alwaysD> | <titForTat> | <Pavlov>
+<alwaysC> ::= True
+<alwaysD> ::= False
+<titForTat> ::= others[0][-1] if len(others[0]) else True
+<Pavlov> ::= others[0][-1] == me[-1] if len(me) else True
