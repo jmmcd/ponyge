@@ -7,6 +7,8 @@
 EXPECTED_ARGS=1
 E_BADARGS=65
 TAG="TAG"
+USERNAME=erik.hemberg
+USERNAME=jamesmichaelmcdermott
 
 if [ $# -lt $EXPECTED_ARGS ]
 then
@@ -17,11 +19,11 @@ fi
 NAME="ponyge-$1"
 
 # Exporting the trunk to a zip
-svn export https://ponyge.googlecode.com/svn/trunk/ --username erik.hemberg $NAME
+svn export https://ponyge.googlecode.com/svn/trunk/ --username $USERNAME $NAME
 
 zip -r $NAME.zip $NAME
 
 if [ "$2" = $TAG ]; then
 # Tagging the release by copying the trunk to tags
-    svn copy https://ponyge.googlecode.com/svn/trunk/ https://ponyge.googlecode.com/svn/tags/$NAME --username erik.hemberg
+    svn copy https://ponyge.googlecode.com/svn/trunk/ https://ponyge.googlecode.com/svn/tags/$NAME --username $USERNAME
 fi
