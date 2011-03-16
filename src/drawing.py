@@ -68,10 +68,12 @@ class Drawing(turtle.Turtle):
         self.end_fill()
 
     def a(self): #decrease angle
-        self.angle -= self.ANGLE
+        self.ANGLE -= 1
+        self.angle = self.set_angles[self.ANGLE]
 
     def A(self): #increase angle
-        self.angle += self.ANGLE
+        self.ANGLE += 1
+        self.angle += self.set_angles[self.ANGLE]
 
     def X(self): #Do nothing
         pass
@@ -116,7 +118,9 @@ class Drawing(turtle.Turtle):
         self.l_system = l_system
         self.depth = depth
         self.STEP = 2
-        self.ANGLE = 5
+        self.set_angles = [10, 12, 15, 20, 24, 27.5, 30, 360.0 / 11,
+                           36.0, 40.0, 45, 360.0 / 7, 60, 72, 90]
+        self.ANGLE = 3
         self.step = 10
         self.pen_colour = 0.0
         self.fill_colour = 0.0

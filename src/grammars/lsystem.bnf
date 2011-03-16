@@ -1,4 +1,4 @@
-<s> ::= <def_angle>:<def_depth>:<def_stepsize>:<def_colour1>:<def_colour2>:<def_circle_angle>:<def_axiom>:<rules>
+<s> ::= <def_angle>:<def_depth>:<def_stepsize>:<def_colour1>:<def_colour2>:<def_circle_angle>:<def_axiom>:<rule>:<rule>:<rules>
 <def_angle> ::= angle=<angle>
 <def_depth> ::= depth=<depth>
 <def_stepsize> ::= stepsize=<stepsize>
@@ -6,13 +6,13 @@
 <def_colour2> ::= colour2=<n> <n> <n>
 <def_circle_angle> ::= circle_angle=<angle>
 <def_axiom> ::= axiom=<code><code>
-<rules> ::= <rule> | <rules>:<rule>
+<rules> ::= <rule> | <rule>:<rule> | <rules>:<rule> | <rules>:<rule>
 <rule> ::= <char>=<rhs>
-<code> ::= <char> | <char><code>
-<rhs> ::= <code> | {<code>} | [<code>]
-# <char> ::= f | F | { | } | [ | ] | - | + | C | S | s | X | A | D | a | n | m | N | M | w | W
-<char> ::= f | F | - | + | C | D | FD | n | m | N | M | w | W
-<angle> ::= 15 | 25 | 60
-<depth> ::=  2 | 3 | 4 | 5
-<stepsize> ::= 10 | 16
+<code> ::= <char> | <char> | <char><char> | <char><code><code> | <char><code> | <char><code> | {<code>} | [<code>]
+<rhs> ::= <code>
+#<char> ::= f | F | { | } | [ | ] | - | + | C | S | s | X | A | D | a | n | m | N | M | w | W
+<char> ::= F | F | - | + | C | n | m | N | M
+<angle> ::= 10 | 12 | 15 | 20 | 24 | 27.5 | 30 | 360.0 / 11 | 36.0 | 40.0 | 45 | 360.0 / 7 | 60 | 72 | 90
+<depth> ::=  3 | 4 | 5 | 6
+<stepsize> ::= 6 | 8 | 10 | 12 | 14
 <n> ::= 0 | 20 | 40 | 60 | 80 | 100 | 120 | 140 | 160 | 180 | 200 | 220 | 240 | 256
