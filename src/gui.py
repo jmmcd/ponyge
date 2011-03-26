@@ -358,7 +358,7 @@ class GUI(object):
         print(phenotype)
         p_dict = drawing.parse_phenotype(phenotype)
         _lsystem = lsystem.LSystem(p_dict['axiom'],p_dict['rules'])
-        _drawing = drawing.Drawing(_lsystem, p_dict['depth'], max_length=8000)
+        _drawing = drawing.Drawing(_lsystem, p_dict['depth'], 8000, x, y, ATTRACTORS)
         _drawing.angle = p_dict['angle']
         _drawing.step = p_dict['step_size']
         _drawing.colour1 = p_dict['colour1']
@@ -398,6 +398,40 @@ class GUI(object):
             #print "stopIt: exitflag = False"
 
 if __name__ == '__main__':
+    import getopt
+    try:
+        #FIXME help option
+        print(sys.argv)
+        OPTS, ARGS = getopt.getopt(sys.argv[1:], "a:", 
+                                   ["attractors"])
+    except getopt.GetoptError as err:
+        print(str(err))
+        #FIXME usage
+        sys.exit(2)
+    ATTRACTORS = []
+    for opt, arg in OPTS:
+        if opt in ("-a", "--attractors"):
+            # Attractors are read as dictionarys containing type,
+            # effect and size, they are separated by :, e.g -a
+            # "type=positive, effect=gravity, x=0, y=0,
+            # size=10:type=negative, effect=color, x=10, y=20,
+            # size=20"
+            # TODO very long code for the attractor parsing
+            number_values = ('x', 'y', 'size')
+            splits = arg.split(':')
+            for split in splits:
+                if len(split) > 0:
+                    attractor = {}
+                    items = split.split(',')
+                    for item in items:
+                        key, value = [item.strip() for item in item.split('=')]
+                        if key in number_values:
+                            value = float(value)
+                        attractor[key] = value
+                    ATTRACTORS.append(attractor)
+
+        else:
+            assert False, "unhandeled option"
     _gui = GUI()
     RUN = True
     while RUN:

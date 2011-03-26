@@ -23,17 +23,53 @@ import lsystem
 import re
 import math
 
+class Attractor:
+    """Attractor or repulsor"""
+    #TODO currently only checked in forward movement, check when drawing circle?
+    def __init__(self, type_, effect, xcor, ycor, side):
+        """Type, effect center coordinate and sides"""
+        #TODO make the force field a different shape than a square?
+        self.type_ = type_
+        self.effect = effect
+        self.xcor = (xcor - side, xcor + side)
+        self.ycor = (ycor - side, ycor + side)
+        self.side = side
+        print('%s __init__ type:%s effect:%s x_min:%.3f x_max:%.3f y_min:%.3f y_max:%.3f' % (__name__, self.type_, self.effect, self.xcor[0], self.xcor[1], self.ycor[0], self.ycor[1]))
+
+    def force_field_effect(self, turtle):
+        """Check if turtle is in the force field, then apply force
+        field effect"""
+        if self.xcor[0] < turtle.xcor() < self.xcor[1] and \
+                self.ycor[0] < turtle.ycor() < self.ycor[1]:
+            if self.type_ == 'positive':
+                if self.effect == 'gravity':
+                    turtle.S()
+                elif self.effect == 'color':
+                    turtle.n()
+            else:
+                if self.effect == 'gravity':
+                    turtle.s()
+                elif self.effect == 'color':
+                    turtle.m()
+            
 class Drawing(turtle.Turtle):
     """Class for drawing"""
+
+    def force_field(self):
+        """Check if force_fields affects the turtle"""
+        for force_field in self.force_fields:
+            force_field.force_field_effect(self)
 
     def f(self): #forward no drawing
         self.penup()
         self.forward(self.step)
+        self.force_field()
 
     def F(self): #forward drawing
         self.pendown()
         self.forward(self.step)
         self.penup()
+        self.force_field()
 
     def C(self): #drawing an arc with radius step and angle circle_angle
         self.pendown()
@@ -112,7 +148,7 @@ class Drawing(turtle.Turtle):
     def _pop(self): #pop and set the (position, heading) from the stack
         self.set_state(self.stack.pop())
 
-    def __init__(self, l_system, depth, max_length=None):
+    def __init__(self, l_system, depth, max_length=None, x=0.0, y=0.0, force_fields = None):
         """Set the lsystem and the initial parameters"""
         super(Drawing,self).__init__()
         self.l_system = l_system
@@ -152,6 +188,9 @@ class Drawing(turtle.Turtle):
                        "W":self.W
                        }
         self.stack = []
+        self.force_fields = []
+        for force_field in force_fields:
+            self.force_fields.append(Attractor(force_field['type'], force_field['effect'], force_field['x'] + x, force_field['y'] + y, force_field['size'])) 
 
     def draw(self, x, y, width, heigth):
         """Draw the string. The l-system axiom is extended to the specified depth"""
