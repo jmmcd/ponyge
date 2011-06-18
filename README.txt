@@ -6,7 +6,7 @@ an advertisement and a starting-point for those new to GE, a reference
 for implementors and researchers, a rapid-prototyping medium for our
 own experiments, and a Python workout. And a pony.
 
-PonyGE is copyright (C) 2009-2010 Erik Hemberg
+PonyGE is copyright (C) 2009-2011 Erik Hemberg
 <erik.hemberg@gmail.com> and James McDermott
 <jamesmichaelmcdermott@gmail.com>.
 

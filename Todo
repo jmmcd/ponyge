@@ -1,7 +1,28 @@
 - Make README in rst
+
 - Use compile if the evolved function will be used multiple times
-- Let fitness return tuples to allow e.g. parisimony preassure
-- Create example of evolving python code
-- Create even-n parity example
+
+- Let fitness return tuples to allow e.g. parsimony preassure
+
 - Enable line breaks in the rules when parsing, i.e. avoid everything on one line
+
 - Print stats to file
+
+- Add a cmdline parameter and code to set the save-directory (and make
+  it automatically if necessary)
+
+- Look at Rangoli: what are the rules? Can we learn from them?
+  http://en.wikipedia.org/wiki/Rangoli
+
+- In L-systems, the main command which changes state without drawing
+  is rotate (aka +/-). The key thing about this is, you can have lots
+  of rotate commands either together, or spread out through the
+  program. Rotation "wraps around", so if you have "too many" +
+  commands, you just end up back at the start. This is a crucial
+  property because it is in the nature of L-systems to sometimes give
+  too many of a particular command. Our commands for colour and
+  line-width should do the same. So we should have say 10 or 100
+  gradations of colour (indices into a colour table, maybe) and when
+  the index increases beyond that it should wrap around.
+
+- Add Jennifer's PonyGE code as a branch.
