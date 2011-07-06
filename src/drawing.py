@@ -51,7 +51,7 @@ class Attractor:
                     turtle.s()
                 elif self.effect == 'color':
                     turtle.m()
-            
+
 class Drawing(turtle.Turtle):
     """Class for drawing"""
 
@@ -115,19 +115,19 @@ class Drawing(turtle.Turtle):
         pass
 
     def n(self): # increase pen palette parameter
-        self.pen_colour += 0.2
+        self.pen_colour += 1
         self.pencolor(self.map_colour(self.pen_colour))
 
     def m(self): # decrease pen palette parameter
-        self.pen_colour -= 0.2
+        self.pen_colour -= 1
         self.pencolor(self.map_colour(self.pen_colour))
 
     def N(self): # increase fill palette parameter
-        self.fill_colour += 0.2
+        self.fill_colour += 1
         self.fillcolor(self.map_colour(self.fill_colour))
 
     def M(self): # decrease fill palette parameter
-        self.fill_colour -= 0.2
+        self.fill_colour -= 1
         self.fillcolor(self.map_colour(self.fill_colour))
 
     def w(self): # decrease pen width
@@ -158,8 +158,8 @@ class Drawing(turtle.Turtle):
                            36.0, 40.0, 45, 360.0 / 7, 60, 72, 90]
         self.ANGLE = 3
         self.step = 10
-        self.pen_colour = 0.0
-        self.fill_colour = 0.0
+        self.pen_colour = 0
+        self.fill_colour = 0
         self.circle_angle = 20.5
         self.angle = 60
         self.pen_width = 3.0
@@ -190,7 +190,7 @@ class Drawing(turtle.Turtle):
         self.stack = []
         self.force_fields = []
         for force_field in force_fields:
-            self.force_fields.append(Attractor(force_field['type'], force_field['effect'], force_field['x'] + x, force_field['y'] + y, force_field['size'])) 
+            self.force_fields.append(Attractor(force_field['type'], force_field['effect'], force_field['x'] + x, force_field['y'] + y, force_field['size']))
 
     def draw(self, x, y, width, heigth):
         """Draw the string. The l-system axiom is extended to the specified depth"""
@@ -232,21 +232,24 @@ class Drawing(turtle.Turtle):
         d["fill_colour"] = self.fill_colour
         return d
 
-    # We use a similar palette scheme to that of Hart (EvoMUSART
-    # 2007). There are two "anchor colours", set as constants in the
-    # input string. There is a single palette parameter which varies
-    # during a drawing (n and m, N and M commands). Large positive
-    # values give a saturated version of colour1 (tending to white),
-    # small positive values a dark version tending to black. Negative
-    # values work similarly for colour2.
+    # Palette scheme is circular:
+    # 0 -> colour1
+    # 1/3 -> colour2
+    # 2/3 -> black
+    # 1 -> colour1
     def map_colour(self, col):
-        # Sigmoid maps values from [0, inf] to [0, 1]
-        def sigmoid(val):
-            return 1.0 / (1 + math.exp(val * abs(col) / 255.0))
-        if col < 0:
-            return tuple(map(sigmoid, self.colour2))
+        black = (0.0, 0.0, 0.0)
+        granularity = 100
+        v = (col % granularity) / float(granularity)
+        # linear interpolation between a and b.
+        def lin(a, b, t):
+            return tuple((ai + t * (bi - ai)) / 256.0 for ai, bi in zip(a, b))
+        if v < 1/3.0:
+            return lin(self.colour1, self.colour2, v * 3.0)
+        elif v < 2/3.0:
+            return lin(self.colour2, black, (v - 1/3.0) * 3.0)
         else:
-            return tuple(map(sigmoid, self.colour1))
+            return lin(black, self.colour1, (v - 2/3.0) * 3.0)
 
 def dragon_curve(depth=3):
     """draw a dragon curve Dragon curve angle=60"""
