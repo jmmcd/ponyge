@@ -45,7 +45,7 @@ class Grammar(object):
                     # Find terminals
                     tmp_productions = []
                     for production in [production.strip()
-                                       for production in 
+                                       for production in
                                        productions.split(production_separator)]:
                         tmp_production = []
                         if not re.search(non_terminal_pattern, production):
@@ -56,7 +56,7 @@ class Grammar(object):
                             # TODO does this handle quoted NT symbols?
                             for value in re.findall("<.+?>|[^<>]*", production):
                                 if value != '':
-                                    if not re.search(non_terminal_pattern, 
+                                    if not re.search(non_terminal_pattern,
                                                      value):
                                         symbol = (value, self.T)
                                         self.terminals.add(value)
@@ -73,7 +73,7 @@ class Grammar(object):
                     raise ValueError("Each rule must be on one line")
 
     def __str__(self):
-        return "%s %s %s %s" % (self.terminals, self.non_terminals, 
+        return "%s %s %s %s" % (self.terminals, self.non_terminals,
                                 self.rules, self.start_rule)
 
     def generate(self, _input, max_wraps=2):
@@ -115,12 +115,12 @@ class Grammar(object):
         return (output, used_input)
 
 def python_filter(txt):
-    """ Create correct python syntax. 
-    
+    """ Create correct python syntax.
+
     We use {: and :} as special open and close brackets, because
     it's not possible to specify indentation correctly in a BNF
     grammar without this type of scheme."""
-    
+
     indent_level = 0
     tmp = txt[:]
     i = 0
@@ -460,8 +460,8 @@ def mane():
     # Create Individuals
     individuals = initialise_population(POPULATION_SIZE)
     # Loop
-    best_ever = search_loop(GENERATIONS, individuals, bnf_grammar, 
-                            generational_replacement, tournament_selection, 
+    best_ever = search_loop(GENERATIONS, individuals, bnf_grammar,
+                            generational_replacement, tournament_selection,
                             FITNESS_FUNCTION)
     print("Best " + str(best_ever))
 
@@ -470,9 +470,9 @@ if __name__ == "__main__":
     try:
         #FIXME help option
         print(sys.argv)
-        OPTS, ARGS = getopt.getopt(sys.argv[1:], "vp:g:e:m:x:b:f:", 
-                                   ["verbose", "population", "generations", 
-                                    "elite_size", "mutation", "crossover", 
+        OPTS, ARGS = getopt.getopt(sys.argv[1:], "vp:g:e:m:x:b:f:",
+                                   ["verbose", "population", "generations",
+                                    "elite_size", "mutation", "crossover",
                                     "bnf_grammar", "fitness_function"])
     except getopt.GetoptError as err:
         print(str(err))

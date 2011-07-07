@@ -328,11 +328,14 @@ class GUI(object):
                 #Drawing l-system
 #                phenotype = 'angle=6%d\ndepth=%d\nstep_size=10\ncircle_angle=20.5\naxiom=F\nF=F-F++F-F'%((i*j),(i*j))
                 phenotype = self.ge.individuals[i*self.n+j].phenotype
-                self.draw_phenotype(phenotype,
-                                    self.myt.index_to_pixel(i, "x") + self.myt.xside_box / 2.0,
-                                    self.myt.index_to_pixel(j, "y") + self.myt.yside_box / 2.0,
-                                    self.myt.xside,
-                                    self.myt.yside)
+                valid = self.draw_phenotype(
+                    phenotype,
+                    self.myt.index_to_pixel(i, "x") + self.myt.xside_box / 2.0,
+                    self.myt.index_to_pixel(j, "y") + self.myt.yside_box / 2.0,
+                    self.myt.xside,
+                    self.myt.yside)
+                if not valid:
+                    self.setInvalid(i, j)
 
         self.configGUI(NORMAL, NORMAL, NORMAL, NORMAL, DISABLED, DISABLED, INSTRUCTIONS)
         self.set_listeners()
@@ -352,9 +355,13 @@ class GUI(object):
         turtle.onkey(self.redisplaycb, "r")
         turtle.listen()
 
+    # Return True if a non-null drawing was produced, ie the
+    # individual is valid (phenotype is not None), phenotype does not
+    # exceed maximum length, and drawing contains some commands which
+    # actually paint something.
     def draw_phenotype(self, phenotype, x, y, w, h):
         if phenotype is None:
-            return
+            return False
         print(phenotype)
         p_dict = drawing.parse_phenotype(phenotype)
         _lsystem = lsystem.LSystem(p_dict['axiom'],p_dict['rules'])
@@ -364,7 +371,8 @@ class GUI(object):
         _drawing.colour1 = p_dict['colour1']
         _drawing.colour2 = p_dict['colour2']
         _drawing.circle_angle = p_dict['circle_angle']
-        _drawing.draw(x, y, w, h)
+        non_null = _drawing.draw(x, y, w, h)
+        return non_null
 
     def setSelected(self, i, j):
         if self.fitness[i*self.n + j] > 0.0:
@@ -378,6 +386,9 @@ class GUI(object):
     def setUnselected(self, i, j):
         self.fitness[i*self.n + j] = 0.0
         self.myt.drawFrame(i, j)
+
+    def setInvalid(self, i, j):
+        self.fitness[i*self.n + j] = -10.0
 
     def clearCanvas(self):
         self.refreshCanvas()
@@ -402,7 +413,7 @@ if __name__ == '__main__':
     try:
         #FIXME help option
         print(sys.argv)
-        OPTS, ARGS = getopt.getopt(sys.argv[1:], "a:", 
+        OPTS, ARGS = getopt.getopt(sys.argv[1:], "a:",
                                    ["attractors"])
     except getopt.GetoptError as err:
         print(str(err))

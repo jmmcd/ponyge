@@ -22,6 +22,7 @@ import turtle
 import lsystem
 import re
 import math
+import sys
 
 class Attractor:
     """Attractor or repulsor"""
@@ -164,7 +165,7 @@ class Drawing(turtle.Turtle):
         self.angle = 60
         self.pen_width = 3.0
         self.max_length = max_length
-        #Avalible rules
+        #Available rules
         self._rules = {"-":self.l,
                        "+":self.r,
                        "f":self.f,
@@ -187,11 +188,14 @@ class Drawing(turtle.Turtle):
                        "w":self.w,
                        "W":self.W
                        }
+        self.drawing_commands = "FCD}"
         self.stack = []
         self.force_fields = []
         for force_field in force_fields:
             self.force_fields.append(Attractor(force_field['type'], force_field['effect'], force_field['x'] + x, force_field['y'] + y, force_field['size']))
 
+    # Return True if the phenotype does not exceed maximum length, and
+    # drawing contains some commands which actually paint something.
     def draw(self, x, y, width, heigth):
         """Draw the string. The l-system axiom is extended to the specified depth"""
         self.reset()
@@ -203,20 +207,26 @@ class Drawing(turtle.Turtle):
             self.l_system.step()
             if (self.max_length is not None and
                 len(self.l_system.string) > self.max_length):
-                print("Exceeded maximum length: will not draw L-system")
                 self.hideturtle()
-                return
+                return False
         print(self.l_system.string)
-        self._draw(self.l_system.string, self._rules)
+        non_null = self._draw(self.l_system.string, self._rules)
         self.hideturtle()
         turtle.update()
+        return non_null
 
+    # Return True if some of the commands actually draw something, as
+    # opposed to just moving around.
     def _draw(self, commands, rules):
         """Call the function in the command specified by the passed in rules"""
+        null_drawing = not any(d in commands for d in self.drawing_commands)
+        if null_drawing:
+            return False
         for b in commands:
             # Removed exception-handling -- if there's a bad command,
             # we want to know about it.
             rules[b]()
+        return True
 
     def set_state(self, state):
         self.setposition(state["position"])
