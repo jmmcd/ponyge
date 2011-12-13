@@ -1,11 +1,11 @@
-import random
-import copy
+import random, copy
+import ponyge as p
 arities = {"*":2, "+":2, "-": 2, "1":0, "2":0, "3":0, "4":0, "5":0, "6":0,
            "7":0, "8":0, "9":0, "0":0, "sin":1, "cos":1, "tan":1}
 
 class Tree:
 
-    def __init__(self, expr, parent, maxDepth = 3):
+    def __init__(self, expr, parent, maxDepth = 10):
         self.parent = parent
         self.maxDepth = maxDepth
         if len(expr) == 1:
@@ -48,14 +48,22 @@ class Tree:
         chosen_prod = random.choice(productions)
         for i in range(len(chosen_prod)):
             symbol = chosen_prod[i]
-            if symbol[1] == grammar.T:
-                self.children.append(Tree(symbol[0],self))
-            else:
-                self.children.append(Tree(symbol[0],self))
+            if symbol[1] == grammar.T: #if the right hand side is a terminal
+                self.children.append(Tree((symbol[0],),self))
+            elif symbol[1] == grammar.NT: # if the right hand side is a non-terminal
+                self.children.append(Tree((symbol[0],),self))
                 self.children[i].grammarDerivation(grammar)
+
+    def getOutput(self):
+        output = []
+        for child in self.children:
+            if child.children == []:
+                output.append(child.root)
+            else:
+                output += child.getOutput()
+        return output
             
     def grow(self):
-        print self.getDepth()
         if self.getDepth() == self.maxDepth: 
             while arities[self.root] != 0:
                 self.root = random.choice[arities.keys()]
@@ -140,8 +148,9 @@ def crossover(tree1, tree2):
         return [tree1, tree2]
 
 def getDerivation(grammar):
-    tree = Tree(grammar.startRule[0], self)
+    tree = Tree((str(grammar.start_rule[0]),), None)
     tree.grammarDerivation(grammar)
+    return (tree, tree.getOutput())
 
 def crossoverTests():
      tree1 = Tree(("+",("*", "2", "3",),"5"), None)
@@ -179,6 +188,14 @@ def crossoverTests():
      crossList = crossover(tree1, tree6)
      assert str(crossList[0]) == str(tree1)
      assert str(crossList[1]) == str(tree6)
-     
+
+def grammarDerivationTests():
+    grammar1 = p.Grammar("grammars/boolean.pybnf")
+    tree,output = getDerivation(grammar1)
+    print tree
+    print output
+    
+         
 if __name__ == '__main__':
-    crossoverTests()
+    #crossoverTests()
+    grammarDerivationTests()
