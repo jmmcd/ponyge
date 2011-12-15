@@ -24,7 +24,7 @@ class Tree:
         result += str(self.root)
         for child in self.children:
             if len(child.children) > 0:
-                result += " " + child.__str__()
+                result += " " + str(child)
             else:
                 result += " " + str(child.root)
         result += ")"
