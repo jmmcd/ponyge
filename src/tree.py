@@ -46,6 +46,12 @@ class Tree:
     def grammarDerivation(self, grammar):
         productions = grammar.rules[self.root]
         chosen_prod = random.choice(productions)
+
+        #checks max depth
+        if self.getDepth() == sef.maxDepth():
+            while all([sym[1] == grammar.T for sym in chosen_prod]) == False:
+                chosen_prod = random.choice(productions)
+            
         for i in range(len(chosen_prod)):
             symbol = chosen_prod[i]
             if symbol[1] == grammar.T: #if the right hand side is a terminal
@@ -61,7 +67,7 @@ class Tree:
                 output.append(child.root)
             else:
                 output += child.getOutput()
-        return output
+        return "".join(output)
             
     def grow(self):
         if self.getDepth() == self.maxDepth: 
@@ -84,6 +90,13 @@ class Tree:
         
         #grow from random node
         tree.grow()
+
+    def grammarMutate(self):
+        #choose random node
+        tree = self.getRandom(0.2)
+        
+        #grow(based on grammar) from random node
+        tree.grammarDerivation()
 
     def getLabels(self):
         labels = [self.root]
