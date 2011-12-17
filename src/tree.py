@@ -19,6 +19,7 @@ class Tree:
                     self.children.append(Tree(child, self))
                 else:
                     self.children.append(Tree((child,), self))
+        self.grammar = None
     def __str__(self):
         result = "("
         result += str(self.root)
@@ -44,11 +45,12 @@ class Tree:
             return random.choice(self.children).getRandom(prob)
 
     def grammarDerivation(self, grammar):
+        self.grammar = grammar
         productions = grammar.rules[self.root]
         chosen_prod = random.choice(productions)
 
         #checks max depth
-        if self.getDepth() == sef.maxDepth():
+        if self.getDepth() == self.maxDepth:
             while all([sym[1] == grammar.T for sym in chosen_prod]) == False:
                 chosen_prod = random.choice(productions)
             
@@ -94,9 +96,11 @@ class Tree:
     def grammarMutate(self):
         #choose random node
         tree = self.getRandom(0.2)
+        while tree.root in self.grammar.terminals:
+            tree = self.getRandom(0.2)
         
         #grow(based on grammar) from random node
-        tree.grammarDerivation()
+        tree.grammarDerivation(self.grammar)
 
     def getLabels(self):
         labels = [self.root]
