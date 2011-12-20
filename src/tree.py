@@ -48,6 +48,7 @@ class Tree:
         self.grammar = grammar
         productions = grammar.rules[self.root]
         chosen_prod = random.choice(productions)
+        self.children = []
 
         #checks max depth
         if self.getDepth() == self.maxDepth:
@@ -60,7 +61,7 @@ class Tree:
                 self.children.append(Tree((symbol[0],),self))
             elif symbol[1] == grammar.NT: # if the right hand side is a non-terminal
                 self.children.append(Tree((symbol[0],),self))
-                self.children[i].grammarDerivation(grammar)
+                self.children[-1].grammarDerivation(grammar)
 
     def getOutput(self):
         output = []
@@ -117,7 +118,7 @@ def crossover(tree1, tree2):
         labels2 = tree2.getLabels()
         intersection = labels1.intersection(labels2)
 
-        intersection = filter(lambda x: arities[x] != 0, intersection)
+        intersection = filter(lambda x: x in tree1.grammar.non_terminals, intersection)
         print intersection
 
         #see if there is a label to do a crossover
