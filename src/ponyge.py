@@ -6,6 +6,7 @@
 """ Small GE implementation """
 
 import sys, copy, re, random, math, operator
+import tree
 
 class Grammar(object):
     """ Context Free Grammar """
@@ -112,6 +113,7 @@ class Grammar(object):
         output = "".join(output)
         if self.python_mode:
             output = python_filter(output)
+        print output
         return (output, used_input)
 
 def python_filter(txt):
@@ -263,10 +265,9 @@ class MaxFitness():
 
 class Individual(object):
     """A GE individual"""
-    def __init__(self, genome, length=100):
+    def __init__(self, genome, grammar):
         if genome == None:
-            self.genome = [random.randint(0, CODON_SIZE)
-                           for _ in range(length)]
+            self.genome, x= tree.getDerivation(grammar)
         else:
             self.genome = genome
         self.fitness = default_fitness(FITNESS_FUNCTION.maximise)
@@ -288,9 +289,9 @@ class Individual(object):
         """ Evaluates phenotype in fitness function and sets fitness"""
         self.fitness = fitness(self.phenotype)
 
-def initialise_population(size=10):
+def initialise_population(size, grammar):
     """Create a popultaion of size and return"""
-    return [Individual(None) for _ in range(size)]
+    return [Individual(None, grammar) for _ in range(size)]
 
 def print_stats(generation, individuals):
     """ Print the statistics for the generation and individuals"""
@@ -327,9 +328,10 @@ def int_flip_mutation(individual):
     """Mutate the individual by randomly chosing a new int with
     probability p_mut. Works per-codon, hence no need for
     "within_used" option."""
-    for i in range(len(individual.genome)):
-        if random.random() < MUTATION_PROBABILITY:
-            individual.genome[i] = random.randint(0, CODON_SIZE)
+##    for i in range(len(individual.genome)):
+##        if random.random() < MUTATION_PROBABILITY:
+##            individual.genome[i] = random.randint(0, CODON_SIZE)
+    individual.genome.grammarMutate()
     return individual
 
 # Two selection methods: tournament and truncation
@@ -355,26 +357,33 @@ def onepoint_crossover(p_0, p_1, within_used=True):
     crossover and return them."""
     # Get the chromosomes
     c_p_0, c_p_1 = p_0.genome, p_1.genome
-    # Uniformly generate crossover points. If within_used==True,
-    # points will be within the used section.
-    if within_used:
-        max_p_0, max_p_1 = p_0.used_codons, p_1.used_codons
-    else:
-        max_p_0, max_p_1 = len(c_p_0), len(c_p_1)
-    pt_p_0, pt_p_1 = random.randint(1, max_p_0), random.randint(1, max_p_1)
-    # Make new chromosomes by crossover: these slices perform copies
-    if random.random() < CROSSOVER_PROBABILITY:
-        c_0 = c_p_0[:pt_p_0] + c_p_1[pt_p_1:]
-        c_1 = c_p_1[:pt_p_1] + c_p_0[pt_p_0:]
-    else:
-        c_0, c_1 = c_p_0[:], c_p_1[:]
-    # Put the new chromosomes into new individuals
-    return [Individual(c_0), Individual(c_1)]
+##    # Uniformly generate crossover points. If within_used==True,
+##    # points will be within the used section.
+##    if within_used:
+##        max_p_0, max_p_1 = p_0.used_codons, p_1.used_codons
+##    else:
+##        max_p_0, max_p_1 = len(c_p_0), len(c_p_1)
+##    pt_p_0, pt_p_1 = random.randint(1, max_p_0), random.randint(1, max_p_1)
+##    # Make new chromosomes by crossover: these slices perform copies
+##    if random.random() < CROSSOVER_PROBABILITY:
+##        c_0 = c_p_0[:pt_p_0] + c_p_1[pt_p_1:]
+##        c_1 = c_p_1[:pt_p_1] + c_p_0[pt_p_0:]
+##    else:
+##        c_0, c_1 = c_p_0[:], c_p_1[:]
+##    # Put the new chromosomes into new individuals
+##    return [Individual(c_0), Individual(c_1)]
+
+    tree1, tree2 = tree.crossover(c_p_0, c_p_1)
+    ind1 = Individual(tree1, tree1.grammar)
+    ind2 = Individual(tree2, tree2.grammar)
+
+    return [ind1, ind2]
 
 def evaluate_fitness(individuals, grammar, fitness_function):
     """ Perform the mapping for each individual """
     for ind in individuals:
-        ind.phenotype, ind.used_codons = grammar.generate(ind.genome)
+        ind.phenotype = ind.genome.getOutput()
+        #ind.phenotype, ind.used_codons = grammar.generate(ind.genome)
         if ind.phenotype != None:
             if not hasattr(fitness_function, "COEVOLUTION") or \
                     not fitness_function.COEVOLUTION:
@@ -400,7 +409,8 @@ def generational_replacement(new_pop, individuals):
     new_pop.sort(reverse=True)
     return new_pop[:GENERATION_SIZE]
 
-def steady_state_replacement(new_pop, individuals):
+def steady_state_replacement(new_pop,
+                             s):
     """ Return individuals. If the best of new pop is better than the
     worst of individuals it is inserted into individuals"""
     individuals.sort(reverse=True)
@@ -458,7 +468,7 @@ def mane():
     if VERBOSE:
         print(bnf_grammar)
     # Create Individuals
-    individuals = initialise_population(POPULATION_SIZE)
+    individuals = initialise_population(POPULATION_SIZE, bnf_grammar)
     # Loop
     best_ever = search_loop(GENERATIONS, individuals, bnf_grammar,
                             generational_replacement, tournament_selection,
