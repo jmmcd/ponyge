@@ -1,4 +1,4 @@
 <code> ::= lambda x, y: <expr>
-<expr> ::= <var> | <var> | <op>
+<expr> ::= <var> | <var> | <op> | x
 <var>  ::= x | y
-<op>   ::= (<expr> and <expr>) | (<expr> or <expr>) | (not <expr>)
+<op>   ::= (<expr> and <expr>) | (<expr> or <expr>) | (not <expr>) | x
