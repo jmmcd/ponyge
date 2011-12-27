@@ -25,7 +25,7 @@ from idlelib.ColorDelegator import ColorDelegator
 from idlelib.textView import view_file # TextViewer
 from imp import reload
 import ponyge
-import lsystem
+from lsystem import *
 import drawing
 
 import turtle
@@ -364,8 +364,8 @@ class GUI(object):
             return False
         print(phenotype)
         p_dict = drawing.parse_phenotype(phenotype)
-        _lsystem = lsystem.LSystem(p_dict['axiom'],p_dict['rules'])
-        _drawing = drawing.Drawing(_lsystem, p_dict['depth'], 8000, x, y, ATTRACTORS)
+        _grammar_type = GRAMMAR_TYPE(p_dict['axiom'],p_dict['rules'])
+        _drawing = drawing.Drawing(_grammar_type, p_dict['depth'], 8000, x, y, ATTRACTORS)
         _drawing.angle = p_dict['angle']
         _drawing.step = p_dict['step_size']
         _drawing.colour1 = p_dict['colour1']
@@ -413,14 +413,16 @@ if __name__ == '__main__':
     try:
         #FIXME help option
         print(sys.argv)
-        OPTS, ARGS = getopt.getopt(sys.argv[1:], "a:",
-                                   ["attractors"])
+        OPTS, ARGS = getopt.getopt(sys.argv[1:], "a:G:",
+                                   ["attractors, grammar_type"])
     except getopt.GetoptError as err:
         print(str(err))
         #FIXME usage
         sys.exit(2)
     ATTRACTORS = []
+    GRAMMAR_TYPE = LSystem
     for opt, arg in OPTS:
+        print(opt, arg)
         if opt in ("-a", "--attractors"):
             # Attractors are read as dictionarys containing type,
             # effect and size, they are separated by :, e.g -a
@@ -440,7 +442,9 @@ if __name__ == '__main__':
                             value = float(value)
                         attractor[key] = value
                     ATTRACTORS.append(attractor)
-
+        elif opt in ("-G", "--grammar_type"):
+            # Default grammar type is LSystem
+            GRAMMAR_TYPE = eval(arg)
         else:
             assert False, "unhandeled option"
     _gui = GUI()
