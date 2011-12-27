@@ -149,10 +149,10 @@ class Drawing(turtle.Turtle):
     def _pop(self): #pop and set the (position, heading) from the stack
         self.set_state(self.stack.pop())
 
-    def __init__(self, l_system, depth, max_length=None, x=0.0, y=0.0, force_fields = None):
+    def __init__(self, grammar_system, depth, max_length=None, x=0.0, y=0.0, force_fields = None):
         """Set the lsystem and the initial parameters"""
         super(Drawing,self).__init__()
-        self.l_system = l_system
+        self.grammar_system = grammar_system
         self.depth = depth
         self.STEP = 2
         self.set_angles = [10, 12, 15, 20, 24, 27.5, 30, 360.0 / 11,
@@ -197,20 +197,22 @@ class Drawing(turtle.Turtle):
     # Return True if the phenotype does not exceed maximum length, and
     # drawing contains some commands which actually paint something.
     def draw(self, x, y, width, heigth):
-        """Draw the string. The l-system axiom is extended to the specified depth"""
+        """Draw the string. The grammar-system axiom is extended to
+        the specified depth"""
         self.reset()
         turtle.setup(width,heigth,None,None)
         turtle.tracer(200,0)
         self.penup()
         self.setposition(x,y)
-        while not self.l_system.done and self.l_system.generation < self.depth:
-            self.l_system.step()
+        while not self.grammar_system.done and \
+                self.grammar_system.generation < self.depth:
+            self.grammar_system.step()
             if (self.max_length is not None and
-                len(self.l_system.string) > self.max_length):
+                len(self.grammar_system.string) > self.max_length):
                 self.hideturtle()
                 return False
-        print(self.l_system.string)
-        non_null = self._draw(self.l_system.string, self._rules)
+        print(self.grammar_system.string)
+        non_null = self._draw(self.grammar_system.string, self._rules)
         self.hideturtle()
         turtle.update()
         return non_null
