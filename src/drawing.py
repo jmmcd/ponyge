@@ -66,94 +66,115 @@ class Drawing(turtle.Turtle):
             for force_field in self.force_fields:
                 force_field.force_field_effect(self)
 
-    def f(self): #forward no drawing
+    def f(self): 
+        """Forward no drawing"""
         self.penup()
         self.forward(self.step)
         self.force_field()
 
-    def F(self): #forward drawing
+    def F(self): 
+        """Forward drawing"""
         self.pendown()
         self.forward(self.step)
         self.penup()
         self.force_field()
 
-    def C(self): #drawing an arc with radius step and angle circle_angle
+    def C(self): 
+        """Drawing an arc with radius step and angle circle_angle"""
         self.pendown()
         self.circle(self.step, self.circle_angle)
         self.penup()
 
-    def D(self): #drawing a dot of default size
+    def D(self): 
+        """Drawing a dot of default size"""
         self.dot()
 
-    def r(self): #turning right
+    def r(self): 
+        """Turning right"""
         self.right(self.angle)
 
-    def l(self): #turning left
+    def l(self): 
+        """Turning left"""
         self.left(self.angle)
 
-    def S(self): #increase step size
+    def S(self): 
+        """Increase step size"""
         self.step += self.STEP
         if self.step >= 20:
             self.step = 20
 
-    def s(self): #decrease step size
+    def s(self): 
+        """Decrease step size"""
         self.step -= self.STEP
         if self.step <= 2:
             self.step = 2
 
-    def polygon_begin(self): #begin polygon
+    def polygon_begin(self): 
+        """Begin polygon"""
         self.begin_poly()
         self.begin_fill()
 
-    def polygon_end(self): #end polygon
+    def polygon_end(self): 
+        """End polygon"""
         self.end_poly()
         self.end_fill()
 
-    def a(self): #decrease angle
+    def a(self): 
+        """Decrease angle"""
         self.ANGLE -= 1
         self.ANGLE %= len(self.set_angles)
         self.angle = self.set_angles[self.ANGLE]
 
-    def A(self): #increase angle
+    def A(self): 
+        """Increase angle"""
         self.ANGLE += 1
         self.ANGLE %= len(self.set_angles)
         self.angle += self.set_angles[self.ANGLE]
 
-    def X(self): #Do nothing
+    def X(self): 
+        """Do nothing"""
         pass
 
-    def n(self): # increase pen palette parameter
+    def n(self): 
+        """Increase pen palette parameter"""
         self.pen_colour += 1
         self.pencolor(self.map_colour(self.pen_colour))
 
-    def m(self): # decrease pen palette parameter
+    def m(self): 
+        """Decrease pen palette parameter"""
         self.pen_colour -= 1
         self.pencolor(self.map_colour(self.pen_colour))
 
-    def N(self): # increase fill palette parameter
+    def N(self): 
+        """Increase fill palette parameter"""
         self.fill_colour += 1
         self.fillcolor(self.map_colour(self.fill_colour))
 
-    def M(self): # decrease fill palette parameter
+    def M(self): 
+        """Decrease fill palette parameter"""
         self.fill_colour -= 1
         self.fillcolor(self.map_colour(self.fill_colour))
 
-    def w(self): # decrease pen width
+    def w(self): 
+        """Decrease pen width"""
         self.pen_width /= 1.05
         if self.pen_width < 0.5:
             self.pen_width = 0.5
         self.width(self.pen_width)
 
-    def W(self): # increase pen width
+    def W(self): 
+        """Increase pen width"""
         self.pen_width *= 1.05
         if self.pen_width > 3:
             self.pen_width = 3
         self.width(self.pen_width)
 
-    def _push(self): #push the (position, heading) to the stack
+    def _push(self): 
+        """Push the (position, heading) to the stack"""
         self.stack.append(self.make_state())
 
-    def _pop(self): #pop and set the (position, heading) from the stack
+    def _pop(self): 
+        """Pop and set the (position, heading) from the stack"""
         self.set_state(self.stack.pop())
 
     def __init__(self, grammar_system, depth,
@@ -317,7 +338,7 @@ def doodle(depth=3):
     _drawing.draw(0,0,1000,750)
 
 def six_pointed_star(depth=3):
-    # a nice 6-pointed angled star
+    """A nice 6-pointed angled star"""
     _lsystem = lsystem.LSystem("F", [("F", "m[F-F++F-F]")])
     _drawing = Drawing(_lsystem, 4, angle=60, step=10,
                        colour1=(200, 50, 50), colour2=(50, 200, 50),
