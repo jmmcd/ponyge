@@ -363,14 +363,8 @@ class GUI(object):
         if phenotype is None:
             return False
         print(phenotype)
-        p_dict = drawing.parse_phenotype(phenotype)
-        _grammar_type = GRAMMAR_TYPE(p_dict['axiom'],p_dict['rules'])
-        _drawing = drawing.Drawing(_grammar_type, p_dict['depth'], 8000,
-                                   angle=p_dict['angle'],
-                                   step=p_dict['step_size'],
-                                   colour1=p_dict['colour1'],
-                                   colour2=p_dict['colour2'],
-                                   circle_angle=p_dict['circle_angle'])
+        phenotype = "drawing." + phenotype
+        _drawing = eval(phenotype)
         non_null = _drawing.draw(x, y, w, h, force_fields=ATTRACTORS)
         return non_null
 

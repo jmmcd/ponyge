@@ -158,8 +158,8 @@ class Drawing(turtle.Turtle):
 
     def __init__(self, grammar_system, depth, max_length=None,
                  step=10, angle=4, circle_angle=20.5,
-                 colour1="200 0 0", # red
-                 colour2="0 200 0", # green
+                 colour1=(200, 0, 0), # red
+                 colour2=(0, 200, 0), # green
                  STEP=2, ANGLE=5,
                  pen_width=3.0):
         """Set the lsystem and the initial parameters"""
@@ -307,73 +307,22 @@ def curve_branch(depth=3):
 
 def doodle(depth=3):
     _lsystem = lsystem.LSystem('DCa',[('C','CaD++[sCDsCD]++CaD'),('F','')])
-    phenotype = 'angle=90:depth=3:step_size=10:colour1=200 50 50:colour2=50 200 50:circle_angle=20.5:axiom=F[[F]+F]+++F:F=mmmm[F-F++F-F]' # axiom and rules are ignored
-    p_dict = parse_phenotype(phenotype)
     _drawing = Drawing(_lsystem,
-                       p_dict['depth'],
-                       angle=p_dict['angle'],
-                       step=p_dict['step_size'],
-                       colour1=p_dict['colour1'],
-                       colour2=p_dict['colour2'],
-                       circle_angle=p_dict['circle_angle'],
-                       STEP=2,
-                       ANGLE=5)
+                       3, angle=90,
+                       step=10,
+                       colour1=(200, 50, 50),
+                       colour2=(50, 200, 50),
+                       circle_angle=20.5,
+                       STEP=2, ANGLE=5)
     _drawing.draw(0,0,1000,750)
 
 def six_pointed_star(depth=3):
     # a nice 6-pointed angled star
-    phenotype = 'angle=60:depth=4:step_size=10:colour1=200 50 50:colour2=50 200 50:circle_angle=20.5:axiom=F:F=m[F-F++F-F]'
-    p_dict = parse_phenotype(phenotype)
-    _lsystem = lsystem.LSystem(p_dict['axiom'],p_dict['rules'])
-    _drawing = Drawing(_lsystem,
-                       p_dict['depth'],
-                       angle=p_dict['angle'],
-                       step=p_dict['step_size'],
-                       colour1=p_dict['colour1'],
-                       colour2=p_dict['colour2'],
-                       circle_angle=p_dict['circle_angle'],
-                       STEP=2,
-                       ANGLE=5)
+    _lsystem = lsystem.LSystem("F", [("F", "m[F-F++F-F]")])
+    _drawing = Drawing(_lsystem, 4, angle=60, step=10,
+                       colour1=(200, 50, 50), colour2=(50, 200, 50),
+                       circle_angle=20.5, STEP=2, ANGLE=5)
     _drawing.draw(0,0,1000,750)
-
-
-def parse_phenotype(phenotype):
-    """Parses a phenotype: (The keys for the rules are allowed in the
-    axiom or rules)
-    angle=[\d]*\.?[\d]+
-    depth=\d+
-    step_size=\d+
-    colour1=\d+ \d+ \d+
-    colour2=\d+ \d+ \d+
-    circle_angle=[\d]*\.?[\d]+
-    axiom=[-+fF\[\]CSsXAD\{\}a]+
-    [sSaADfFCX]=[-+fF\[\]CSsXADnmNM\{\}\(\)awW]+"""
-    #TODO can I get the keys for the rules allowed by drawing
-    REGEX_FLOAT = '\d+\.?\d+'
-    REGEX_INTEGER = '\d+'
-    REGEX_3_INTEGER = '(\d+) (\d+) (\d+)'
-    REGEX_RULE_KEYS = '[-+fF\[\]CSsXADnmNM\{\}\(\)awW]+'
-    REGEX_RULE = '^(%s)=(%s)$'%(REGEX_RULE_KEYS,REGEX_RULE_KEYS)
-    REGEX_AXIOM = 'axiom=(%s)'%(REGEX_RULE_KEYS)
-    lines = phenotype.split(':')
-    print(lines)
-    p_dict = {}
-    p_dict['angle'] = float(re.search(REGEX_FLOAT, lines[0]).group(0))
-    p_dict['depth'] = int(re.search(REGEX_INTEGER, lines[1]).group(0))
-    p_dict['step_size'] = int(re.search(REGEX_INTEGER, lines[2]).group(0))
-    p_dict['colour1'] = tuple(map(int, re.search(REGEX_3_INTEGER, lines[3]).group(1, 2, 3)))
-    p_dict['colour2'] = tuple(map(int, re.search(REGEX_3_INTEGER, lines[4]).group(1, 2, 3)))
-    p_dict['circle_angle'] = float(re.search(REGEX_FLOAT, lines[5]).group(0))
-    p_dict['axiom'] = re.search(REGEX_AXIOM,lines[6]).group(1)
-    rules = []
-    for line in lines[7:]:
-        print("line ", line)
-        match = re.search(REGEX_RULE, line)
-        if match is not None:
-            rules.append((match.group(1), match.group(2)))
-    p_dict['rules'] = rules
-    print(p_dict)
-    return p_dict
 
 if __name__ == "__main__":
 
