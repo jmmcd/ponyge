@@ -38,10 +38,14 @@ class Attractor:
         print('%s __init__ type:%s effect:%s x_min:%.3f x_max:%.3f y_min:%.3f y_max:%.3f' % (__name__, self.type_, self.effect, self.xcor[0], self.xcor[1], self.ycor[0], self.ycor[1]))
 
     def force_field_effect(self, turtle):
-        """Check if turtle is in the force field, then apply force
-        field effect"""
-        if self.xcor[0] < turtle.xcor() < self.xcor[1] and \
-                self.ycor[0] < turtle.ycor() < self.ycor[1]:
+        """Find turtle's position relative to its origin. Check if
+        it's in the force field, then apply force field effect if
+        so."""
+        relpos_x = turtle.xcor() - self.origin[0]
+        relpos_y = turtle.ycor() - self.origin[1]
+
+        if self.xcor[0] < relpos_x < self.xcor[1] and \
+                self.ycor[0] < relpos_y < self.ycor[1]:
             if self.type_ == 'positive':
                 if self.effect == 'gravity':
                     turtle.S()
@@ -152,8 +156,8 @@ class Drawing(turtle.Turtle):
     def _pop(self): #pop and set the (position, heading) from the stack
         self.set_state(self.stack.pop())
 
-    def __init__(self, grammar_system, depth, max_length=None, x=0.0,
-                 y=0.0, step=10, angle=4, circle_angle=20.5,
+    def __init__(self, grammar_system, depth, max_length=None,
+                 step=10, angle=4, circle_angle=20.5,
                  colour1="200 0 0", # red
                  colour2="0 200 0", # green
                  STEP=2, ANGLE=5,
@@ -203,7 +207,7 @@ class Drawing(turtle.Turtle):
         self.force_fields = []
         if force_fields:
             for force_field in force_fields:
-                self.force_fields.append(Attractor(force_field['type'], force_field['effect'], force_field['x'] + x, force_field['y'] + y, force_field['size']))
+                self.force_fields.append(Attractor(force_field['type'], force_field['effect'], force_field['x'], force_field['y'], force_field['size']))
 
     # Return True if the phenotype does not exceed maximum length, and
     # drawing contains some commands which actually paint something.
@@ -215,6 +219,7 @@ class Drawing(turtle.Turtle):
         turtle.tracer(200,0)
         self.penup()
         self.setposition(x,y)
+        self.origin = x, y
         while not self.grammar_system.done and \
                 self.grammar_system.generation < self.depth:
             self.grammar_system.step()

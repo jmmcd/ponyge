@@ -365,7 +365,7 @@ class GUI(object):
         print(phenotype)
         p_dict = drawing.parse_phenotype(phenotype)
         _grammar_type = GRAMMAR_TYPE(p_dict['axiom'],p_dict['rules'])
-        _drawing = drawing.Drawing(_grammar_type, p_dict['depth'], 8000, x, y,
+        _drawing = drawing.Drawing(_grammar_type, p_dict['depth'], 8000,
                                    angle=p_dict['angle'],
                                    step=p_dict['step_size'],
                                    colour1=p_dict['colour1'],
