@@ -156,7 +156,7 @@ class Drawing(turtle.Turtle):
     def _pop(self): #pop and set the (position, heading) from the stack
         self.set_state(self.stack.pop())
 
-    def __init__(self, grammar_system, depth, max_length=None,
+    def __init__(self, grammar_system, depth,
                  step=10, angle=4, circle_angle=20.5,
                  colour1=(200, 0, 0), # red
                  colour2=(0, 200, 0), # green
@@ -178,7 +178,6 @@ class Drawing(turtle.Turtle):
         self.circle_angle = circle_angle
         self.angle = angle
         self.pen_width = pen_width
-        self.max_length = max_length
         #Available rules
         self._rules = {"-":self.l,
                        "+":self.r,
@@ -207,7 +206,7 @@ class Drawing(turtle.Turtle):
 
     # Return True if the phenotype does not exceed maximum length, and
     # drawing contains some commands which actually paint something.
-    def draw(self, x, y, width, height, force_fields=None):
+    def draw(self, x, y, width, height, max_length=None, force_fields=None):
         """Draw the string. The grammar-system axiom is extended to
         the specified depth"""
         self.reset()
@@ -216,6 +215,7 @@ class Drawing(turtle.Turtle):
         self.penup()
         self.setposition(x,y)
         self.origin = x, y
+        self.max_length = max_length
         while not self.grammar_system.done and \
                 self.grammar_system.generation < self.depth:
             self.grammar_system.step()

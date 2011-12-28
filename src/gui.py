@@ -365,7 +365,8 @@ class GUI(object):
         print(phenotype)
         phenotype = "drawing." + phenotype
         _drawing = eval(phenotype)
-        non_null = _drawing.draw(x, y, w, h, force_fields=ATTRACTORS)
+        non_null = _drawing.draw(x, y, w, h, max_length=8000,
+                                 force_fields=ATTRACTORS)
         return non_null
 
     def setSelected(self, i, j):

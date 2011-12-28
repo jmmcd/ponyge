@@ -1,10 +1,9 @@
-<s> ::= Drawing(<lsystem>, <depth>, <maxlen>, angle=<angle>, step=<step>, colour1=<colour>, colour2=<colour>, circle_angle=<angle>)
+<s> ::= Drawing(<lsystem>, <depth>, angle=<angle>, step=<step>, colour1=<colour>, colour2=<colour>, circle_angle=<angle>)
 <lsystem> ::= LSystem(<axiom>, [<rule>, <rule>, <rules>])
 <axiom> ::= "<code><code>"
 <rules> ::= <rule> | <rule>,<rule> | <rules>,<rule> | <rules>,<rule>
 <rule> ::= ("<char>", "<rhs>")
 <depth> ::=  3 | 4 | 5 | 6
-<maxlen> ::= 8000
 <angle> ::= 10 | 12 | 15 | 20 | 24 | 27.5 | 30 | 360.0 / 11 | 36.0 | 40.0 | 45 | 360.0 / 7 | 60 | 72 | 90
 <step> ::= 6 | 8 | 10 | 12 | 14
 <colour> ::= (<n>, <n>, <n>)
