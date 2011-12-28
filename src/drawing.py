@@ -161,7 +161,7 @@ class Drawing(turtle.Turtle):
                  colour1="200 0 0", # red
                  colour2="0 200 0", # green
                  STEP=2, ANGLE=5,
-                 pen_width=3.0, force_fields=None):
+                 pen_width=3.0):
         """Set the lsystem and the initial parameters"""
         super(Drawing,self).__init__()
         self.grammar_system = grammar_system
@@ -204,18 +204,14 @@ class Drawing(turtle.Turtle):
                        }
         self.drawing_commands = "FCD}"
         self.stack = []
-        self.force_fields = []
-        if force_fields:
-            for force_field in force_fields:
-                self.force_fields.append(Attractor(force_field['type'], force_field['effect'], force_field['x'], force_field['y'], force_field['size']))
 
     # Return True if the phenotype does not exceed maximum length, and
     # drawing contains some commands which actually paint something.
-    def draw(self, x, y, width, heigth):
+    def draw(self, x, y, width, height, force_fields=None):
         """Draw the string. The grammar-system axiom is extended to
         the specified depth"""
         self.reset()
-        turtle.setup(width,heigth,None,None)
+        turtle.setup(width,height,None,None)
         turtle.tracer(200,0)
         self.penup()
         self.setposition(x,y)
@@ -228,6 +224,12 @@ class Drawing(turtle.Turtle):
                 self.hideturtle()
                 return False
         print(self.grammar_system.string)
+
+        self.force_fields = []
+        if force_fields:
+            for force_field in force_fields:
+                self.force_fields.append(Attractor(force_field['type'], force_field['effect'], force_field['x'], force_field['y'], force_field['size']))
+
         non_null = self._draw(self.grammar_system.string, self._rules)
         self.hideturtle()
         turtle.update()

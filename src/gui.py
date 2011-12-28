@@ -370,9 +370,8 @@ class GUI(object):
                                    step=p_dict['step_size'],
                                    colour1=p_dict['colour1'],
                                    colour2=p_dict['colour2'],
-                                   circle_angle=p_dict['circle_angle'],
-                                   force_fields=ATTRACTORS)
-        non_null = _drawing.draw(x, y, w, h)
+                                   circle_angle=p_dict['circle_angle'])
+        non_null = _drawing.draw(x, y, w, h, force_fields=ATTRACTORS)
         return non_null
 
     def setSelected(self, i, j):
