@@ -58,8 +58,9 @@ class Drawing(turtle.Turtle):
 
     def force_field(self):
         """Check if force_fields affects the turtle"""
-        for force_field in self.force_fields:
-            force_field.force_field_effect(self)
+        if self.force_fields:
+            for force_field in self.force_fields:
+                force_field.force_field_effect(self)
 
     def f(self): #forward no drawing
         self.penup()
@@ -106,10 +107,12 @@ class Drawing(turtle.Turtle):
 
     def a(self): #decrease angle
         self.ANGLE -= 1
+        self.ANGLE %= len(self.set_angles)
         self.angle = self.set_angles[self.ANGLE]
 
     def A(self): #increase angle
         self.ANGLE += 1
+        self.ANGLE %= len(self.set_angles)
         self.angle += self.set_angles[self.ANGLE]
 
     def X(self): #Do nothing
@@ -149,21 +152,28 @@ class Drawing(turtle.Turtle):
     def _pop(self): #pop and set the (position, heading) from the stack
         self.set_state(self.stack.pop())
 
-    def __init__(self, grammar_system, depth, max_length=None, x=0.0, y=0.0, force_fields = None):
+    def __init__(self, grammar_system, depth, max_length=None, x=0.0,
+                 y=0.0, step=10, angle=4, circle_angle=20.5,
+                 colour1="200 0 0", # red
+                 colour2="0 200 0", # green
+                 STEP=2, ANGLE=5,
+                 pen_width=3.0, force_fields=None):
         """Set the lsystem and the initial parameters"""
         super(Drawing,self).__init__()
         self.grammar_system = grammar_system
         self.depth = depth
-        self.STEP = 2
+        self.STEP = STEP
         self.set_angles = [10, 12, 15, 20, 24, 27.5, 30, 360.0 / 11,
                            36.0, 40.0, 45, 360.0 / 7, 60, 72, 90]
-        self.ANGLE = 3
-        self.step = 10
+        self.ANGLE = ANGLE
+        self.step = step
         self.pen_colour = 0
         self.fill_colour = 0
-        self.circle_angle = 20.5
-        self.angle = 60
-        self.pen_width = 3.0
+        self.colour1 = colour1
+        self.colour2 = colour2
+        self.circle_angle = circle_angle
+        self.angle = angle
+        self.pen_width = pen_width
         self.max_length = max_length
         #Available rules
         self._rules = {"-":self.l,
@@ -191,8 +201,9 @@ class Drawing(turtle.Turtle):
         self.drawing_commands = "FCD}"
         self.stack = []
         self.force_fields = []
-        for force_field in force_fields:
-            self.force_fields.append(Attractor(force_field['type'], force_field['effect'], force_field['x'] + x, force_field['y'] + y, force_field['size']))
+        if force_fields:
+            for force_field in force_fields:
+                self.force_fields.append(Attractor(force_field['type'], force_field['effect'], force_field['x'] + x, force_field['y'] + y, force_field['size']))
 
     # Return True if the phenotype does not exceed maximum length, and
     # drawing contains some commands which actually paint something.
@@ -266,36 +277,58 @@ class Drawing(turtle.Turtle):
 def dragon_curve(depth=3):
     """draw a dragon curve Dragon curve angle=60"""
     _lsystem = lsystem.LSystem('F',[('F','F-F++F-F')])
-    _drawing = Drawing(_lsystem, depth)
-    _drawing.angle = 60
-    _drawing.step = 20
+    _drawing = Drawing(_lsystem, depth, angle=60, step=20)
     _drawing.draw(0,0,1000,750)
 
 def simple_branch(depth=2):
     """draw a simple branch Branch angle=22.5"""
     _lsystem = lsystem.LSystem('F',[('F','FF-[-F+F+F]+[+F-F-F]')])
-    _drawing = Drawing(_lsystem, depth)
-    _drawing.angle = 22.5
-    _drawing.step = 20
+    _drawing = Drawing(_lsystem, depth, angle=22.5, step=20)
     _drawing.draw(0,0,1000,750)
 
 def pyramid(depth=3):
     """Pyramid angle=60"""
     _lsystem = lsystem.LSystem('FXF--FF--FF',[('F','FF'),('X','--FXF++FXF++FXF--')])
-    _drawing = Drawing(_lsystem, depth)
-    _drawing.angle = 60
-    _drawing.step = 20
+    _drawing = Drawing(_lsystem, depth, angle=60, step=20)
     _drawing.draw(0,0,1000,750)
 
 def curve_branch(depth=3):
     """Branch Curve angle=22.5, step=40, circle angle=20.5, STEP=2"""
     _lsystem = lsystem.LSystem('C+C',[('C','CC-[-C+C+C]+[-SC-C-sC]')])
-    _drawing = Drawing(_lsystem, depth)
-    _drawing.angle = 22.5
-    _drawing.step = 40
-    _drawing.circle_angle = 20.5
-    _drawing.STEP = 2
+    _drawing = Drawing(_lsystem, depth, angle=22.5, step=40, circle_angle=20.5, STEP=2)
     _drawing.draw(0,0,1000,750)
+
+def doodle(depth=3):
+    _lsystem = lsystem.LSystem('DCa',[('C','CaD++[sCDsCD]++CaD'),('F','')])
+    phenotype = 'angle=90:depth=3:step_size=10:colour1=200 50 50:colour2=50 200 50:circle_angle=20.5:axiom=F[[F]+F]+++F:F=mmmm[F-F++F-F]' # axiom and rules are ignored
+    p_dict = parse_phenotype(phenotype)
+    _drawing = Drawing(_lsystem,
+                       p_dict['depth'],
+                       angle=p_dict['angle'],
+                       step=p_dict['step_size'],
+                       colour1=p_dict['colour1'],
+                       colour2=p_dict['colour2'],
+                       circle_angle=p_dict['circle_angle'],
+                       STEP=2,
+                       ANGLE=5)
+    _drawing.draw(0,0,1000,750)
+
+def six_pointed_star(depth=3):
+    # a nice 6-pointed angled star
+    phenotype = 'angle=60:depth=4:step_size=10:colour1=200 50 50:colour2=50 200 50:circle_angle=20.5:axiom=F:F=m[F-F++F-F]'
+    p_dict = parse_phenotype(phenotype)
+    _lsystem = lsystem.LSystem(p_dict['axiom'],p_dict['rules'])
+    _drawing = Drawing(_lsystem,
+                       p_dict['depth'],
+                       angle=p_dict['angle'],
+                       step=p_dict['step_size'],
+                       colour1=p_dict['colour1'],
+                       colour2=p_dict['colour2'],
+                       circle_angle=p_dict['circle_angle'],
+                       STEP=2,
+                       ANGLE=5)
+    _drawing.draw(0,0,1000,750)
+
 
 def parse_phenotype(phenotype):
     """Parses a phenotype: (The keys for the rules are allowed in the
@@ -336,24 +369,14 @@ def parse_phenotype(phenotype):
     return p_dict
 
 if __name__ == "__main__":
-#Used for doodling drawings
-#Spirograph
-#    _lsystem = lsystem.LSystem('DCa',[('C','CaD++[sCDsCD]++CaD'),('F',''))
-    # phenotype = 'angle=90:depth=0:step_size=10:colour1=200 50 50:colour2=50 200 50:circle_angle=20.5:axiom=F[[F]+F]+++F:F=mmmm[F-F++F-F]'
-    phenotype = 'angle=60:depth=4:step_size=10:colour1=200 50 50:colour2=50 200 50:circle_angle=20.5:axiom=F:F=mmmm[F-F++F-F]'
-    p_dict = parse_phenotype(phenotype)
-    _lsystem = lsystem.LSystem(p_dict['axiom'],p_dict['rules'])
-    _drawing = Drawing(_lsystem, p_dict['depth'])
-    _drawing.angle = p_dict['angle']
-    _drawing.step = p_dict['step_size']
-    _drawing.colour1 = p_dict['colour1']
-    _drawing.colour2 = p_dict['colour2']
-    _drawing.circle_angle = p_dict['circle_angle']
-    _drawing.STEP = 2
-    _drawing.ANGLE = 5
-    _drawing.draw(0,0,1000,750)
-#    dragon_curve()
+
+    # dragon_curve()
+    # pyramid()
+    # curve_branch()
+    # simple_branch()
+    # doodle()
+    six_pointed_star()
+
     while True:
         from time import sleep
         sleep(3)
-

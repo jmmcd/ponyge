@@ -365,12 +365,13 @@ class GUI(object):
         print(phenotype)
         p_dict = drawing.parse_phenotype(phenotype)
         _grammar_type = GRAMMAR_TYPE(p_dict['axiom'],p_dict['rules'])
-        _drawing = drawing.Drawing(_grammar_type, p_dict['depth'], 8000, x, y, ATTRACTORS)
-        _drawing.angle = p_dict['angle']
-        _drawing.step = p_dict['step_size']
-        _drawing.colour1 = p_dict['colour1']
-        _drawing.colour2 = p_dict['colour2']
-        _drawing.circle_angle = p_dict['circle_angle']
+        _drawing = drawing.Drawing(_grammar_type, p_dict['depth'], 8000, x, y,
+                                   angle=p_dict['angle'],
+                                   step=p_dict['step_size'],
+                                   colour1=p_dict['colour1'],
+                                   colour2=p_dict['colour2'],
+                                   circle_angle=p_dict['circle_angle'],
+                                   force_fields=ATTRACTORS)
         non_null = _drawing.draw(x, y, w, h)
         return non_null
 
@@ -467,4 +468,3 @@ if __name__ == '__main__':
         except:
             print("BYE!")
             RUN = False
-
