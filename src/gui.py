@@ -48,9 +48,9 @@ class DummyFitness():
         return 0.0
 
 class GE(object):
-    def __init__(self):
+    def __init__(self, grammar_file):
         self.generation = 0
-        ponyge.GRAMMAR_FILE = "grammars/lsystem.bnf"
+        ponyge.GRAMMAR_FILE = grammar_file
         ponyge.POPULATION_SIZE = 9
         ponyge.GENERATION_SIZE = 9
         ponyge.ELITE_SIZE = 0
@@ -216,7 +216,7 @@ class GUI(object):
         self.n = 3
         self.m = 3
         # Set up PonyGE
-        self.ge = GE()
+        self.ge = GE(GRAMMAR_FILE)
         self.fitness = [0.0 for i in range(self.n) for j in range(self.m)]
 
         Percolator(text).insertfilter(ColorDelegator())
@@ -408,14 +408,15 @@ if __name__ == '__main__':
     try:
         #FIXME help option
         print(sys.argv)
-        OPTS, ARGS = getopt.getopt(sys.argv[1:], "a:G:",
-                                   ["attractors, grammar_type"])
+        OPTS, ARGS = getopt.getopt(sys.argv[1:], "a:G:g:",
+                                   ["attractors=", "grammar_type=", "grammar_file="])
     except getopt.GetoptError as err:
         print(str(err))
         #FIXME usage
         sys.exit(2)
     ATTRACTORS = []
     GRAMMAR_TYPE = LSystem
+    GRAMMAR_FILE = "grammars/lsystem.bnf"
     for opt, arg in OPTS:
         print(opt, arg)
         if opt in ("-a", "--attractors"):
@@ -440,6 +441,9 @@ if __name__ == '__main__':
         elif opt in ("-G", "--grammar_type"):
             # Default grammar type is LSystem
             GRAMMAR_TYPE = eval(arg)
+        elif opt in ("-g", "--grammar_file"):
+            # Default grammar type is lsystem.bnf
+            GRAMMAR_FILE = arg
         else:
             assert False, "unhandeled option"
     _gui = GUI()
