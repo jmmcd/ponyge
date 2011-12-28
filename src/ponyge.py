@@ -293,7 +293,7 @@ def initialise_population(size=10):
     return [Individual(None) for _ in range(size)]
 
 def print_stats(generation, individuals):
-    """ Print the statistics for the generation and individuals"""
+    """Print the statistics for the generation and individuals"""
     def ave(values):
         """ Return the average of the values """
         return float(sum(values))/len(values)
@@ -391,7 +391,7 @@ def interactive_evaluate_fitness(individuals, grammar, callback):
             individual.fitness = fitness_values[i]
 
 def generational_replacement(new_pop, individuals):
-    """ Return new pop. The ELITE_SIZE best individuals are appended
+    """Return new pop. The ELITE_SIZE best individuals are appended
     to new pop if they are better than the worst individuals in new
     pop"""
     individuals.sort(reverse=True)
@@ -401,14 +401,14 @@ def generational_replacement(new_pop, individuals):
     return new_pop[:GENERATION_SIZE]
 
 def steady_state_replacement(new_pop, individuals):
-    """ Return individuals. If the best of new pop is better than the
+    """Return individuals. If the best of new pop is better than the
     worst of individuals it is inserted into individuals"""
     individuals.sort(reverse=True)
     individuals[-1] = max(new_pop + individuals[-1:])
     return individuals
 
 def step(individuals, grammar, replacement, selection, fitness_function, best_ever):
-    """ Return individuals and best ever individual from a step of
+    """Return individuals and best ever individual from a step of
     the EA iteration"""
     #Select parents
     parents = selection(individuals)
