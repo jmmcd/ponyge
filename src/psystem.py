@@ -66,7 +66,7 @@ class Membrane:
 
     def __getitem__(self, index):
         return self.string[index]
-    
+
     def __str__(self):
         return self.string
 
@@ -86,16 +86,16 @@ class Membrane:
         if (self.rules is not None):
             str += '\n'.join([depth_str + '%s -> %s' % x for x in self.rules])
         if (self.membranes is not None):
-            str += '\n'.join([(  depth_str + '{\n' 
-                               + depth_str + '%s\n' 
-                               + depth_str + '}') 
+            str += '\n'.join([(  depth_str + '{\n'
+                               + depth_str + '%s\n'
+                               + depth_str + '}')
                               % x.__repr__(depth) for x in self.membranes])
         return str
 
 
 class PSystem(Membrane):
     """P-System."""
-    
+
     def __init__(self, axiom, membranes=None):
         """Initialize P-system"""
         self.generation = 0
@@ -118,11 +118,11 @@ def main():
     m1 = Membrane(a1, [r1,r2])
     p = PSystem('A', [m1,m2])
     while p.generation < 10:
-        print ('GENERATION: ' + str(p.generation) + '\n')
-        print ('OUTPUT: ' + str(p.string) + '\n')
-        print "PSYSTEM: \n"
-        print p.__repr__()
+        print('GENERATION: ' + str(p.generation) + '\n')
+        print('OUTPUT: ' + str(p.string) + '\n')
+        print("PSYSTEM: \n")
+        print(p.__repr__())
         p.step()
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     main()
