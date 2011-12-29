@@ -2,6 +2,8 @@
 
 """
 Membrane computing system (P-system) in Python.
+
+Based on LSystem by Erik Max Francis.
 """
 
 __program__ 	= 'psystem'
