@@ -18,8 +18,12 @@ class Membrane:
     axiom = None
     rules = None
     membranes = None
+    id = 0
+    dissolve = False
 
-    def __init__(self, axiom=None, rules=None, membranes=None):
+    DISSOLVE_STR = '__delta__'
+
+    def __init__(self, axiom=None, rules=None, membranes=None, secrete_type=0):
         """Initialize membrane"""
         if axiom is not None:
             self.axiom = axiom
@@ -29,10 +33,13 @@ class Membrane:
             self.membranes = membranes
         self.string = self.axiom
         self.done = 0
+        self.secrete_type = secrete_type
 
     def membranes_step(self):
         for membrane in self.membranes:
             membrane.step()
+            if membrane.dissolve:
+                membranes.remove(membrane)
 
     def rules_step(self):
         i = 0
@@ -44,6 +51,8 @@ class Membrane:
                     new_string += output
                     i += len(input)
                     break
+                elif output == self.DISSOLVE_STR:
+                    self.dissolve = True
             else:
                 new_string += self.string[i]
                 i += 1
@@ -66,7 +75,7 @@ class Membrane:
 
     def __getitem__(self, index):
         return self.string[index]
-
+    
     def __str__(self):
         return self.string
 
@@ -83,23 +92,39 @@ class Membrane:
         for i in range(0,depth):
             depth_str += ' '
         str =  depth_str + '%s\n' % self.string
+#        str += depth_str + 'output : %s\n' % self.secrete()
         if (self.rules is not None):
             str += '\n'.join([depth_str + '%s -> %s' % x for x in self.rules])
         if (self.membranes is not None):
-            str += '\n'.join([(  depth_str + '{\n'
-                               + depth_str + '%s\n'
-                               + depth_str + '}')
+            str += '\n'.join([(  depth_str + '{\n' 
+                               + depth_str + '%s\n' 
+                               + depth_str + '}') 
                               % x.__repr__(depth) for x in self.membranes])
         return str
+
+    def secrete(self):
+        # default type: just return this membrane's string
+        if (self.secrete_type == 0):
+            return self.string
+        # recursively (depth first) concatenate membrane strings
+        elif (self.secrete_type == 1):
+            full_string = ''
+            if self.membranes is not None:
+                for membrane in self.membranes:
+                    mem_str = membrane.secrete()
+                    if mem_str is not None:
+                        full_string += mem_str
+            full_string += self.string
+            return full_string
 
 
 class PSystem(Membrane):
     """P-System."""
-
-    def __init__(self, axiom, membranes=None):
+    
+    def __init__(self, axiom, membranes=None, secrete_type=0):
         """Initialize P-system"""
         self.generation = 0
-        Membrane.__init__(self, axiom, None, membranes)
+        Membrane.__init__(self, axiom, None, membranes, secrete_type)
 
     def step(self):
         """Execute one generation of the system."""
@@ -108,21 +133,22 @@ class PSystem(Membrane):
 
 
 def main():
-    r1 = ('A','AB')
-    r2 = ('B','BAC')
-    r3 = ('C','ABC')
-    a1 = 'A'
-    a2 = 'AB'
+    r1 = ('A','ABY')
+    r2 = ('B','BACY')
+    r3 = ('C','ABCY')
+    a1 = 'AZ'
+    a2 = 'ABX'
     m3 = Membrane(a1, [r1,r2])
     m2 = Membrane(a2, [r2,r3], [m3])
     m1 = Membrane(a1, [r1,r2])
-    p = PSystem('A', [m1,m2])
-    while p.generation < 10:
-        print('GENERATION: ' + str(p.generation) + '\n')
-        print('OUTPUT: ' + str(p.string) + '\n')
-        print("PSYSTEM: \n")
-        print(p.__repr__())
+    p = PSystem('A', [m1,m2], 1)
+    while p.generation < 3:
+        print ('====================\n')
+        print ('GENERATION: ' + str(p.generation) + '\n')
+        print ('OUTPUT: ' + str(p.secrete()) + '\n')
+        print ("PSYSTEM: \n")
+        print (p.__repr__())
         p.step()
 
-if __name__ == '__main__':
+if __name__ == '__main__': 
     main()
