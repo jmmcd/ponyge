@@ -3,7 +3,7 @@
 """
 Membrane computing system (P-system) in Python.
 
-Based on LSystem by Erik Max Francis.
+Built on LSystem code by Erik Max Francis.
 """
 
 __program__ 	= 'psystem'
@@ -13,6 +13,9 @@ __copyright__	= 'Copyright (c) 2011 Mark Wagy'
 __license__ 	= 'GPL'
 
 
+# Membrane
+# Represent idea of a cell membrane, modeled after the 
+# biological sort, but not limited by that idea.
 class Membrane:
     """Membrane."""
     axiom = None
@@ -21,7 +24,8 @@ class Membrane:
     id = 0
     dissolve = False
 
-    DISSOLVE_STR = '__delta__'
+    # TODO: this is precarious, need a better idea of 'special' chars
+    DISSOLVE_CHAR = "_"
 
     def __init__(self, axiom=None, rules=None, membranes=None, secrete_type=0):
         """Initialize membrane"""
@@ -34,12 +38,18 @@ class Membrane:
         self.string = self.axiom
         self.done = 0
         self.secrete_type = secrete_type
+        self.SPECIAL_CHARS = [self.DISSOLVE_CHAR]
 
     def membranes_step(self):
         for membrane in self.membranes:
             membrane.step()
             if membrane.dissolve:
-                membranes.remove(membrane)
+                if membrane.rules is not None:
+                    for rule in membrane.rules:
+                        if self.rules is not None:
+                            self.rules.append(rule)
+                self.string += membrane.string
+                self.membranes.remove(membrane)
 
     def rules_step(self):
         i = 0
@@ -50,9 +60,9 @@ class Membrane:
                 if self.string[i:i+len(input)] == input:
                     new_string += output
                     i += len(input)
+                    if output == self.DISSOLVE_CHAR:
+                        self.dissolve = True
                     break
-                elif output == self.DISSOLVE_STR:
-                    self.dissolve = True
             else:
                 new_string += self.string[i]
                 i += 1
@@ -92,7 +102,6 @@ class Membrane:
         for i in range(0,depth):
             depth_str += ' '
         str =  depth_str + '%s\n' % self.string
-#        str += depth_str + 'output : %s\n' % self.secrete()
         if (self.rules is not None):
             str += '\n'.join([depth_str + '%s -> %s' % x for x in self.rules])
         if (self.membranes is not None):
@@ -115,7 +124,14 @@ class Membrane:
                     if mem_str is not None:
                         full_string += mem_str
             full_string += self.string
-            return full_string
+            # move all special chars from secreted string
+            return full_string.translate(None, self.get_special_chars_string())
+
+    def get_special_chars_string(self):
+        str = ''
+        for c in self.SPECIAL_CHARS:
+            str += c
+        return str
 
 
 class PSystem(Membrane):
@@ -132,7 +148,7 @@ class PSystem(Membrane):
         Membrane.step(self)
 
 
-def main():
+def test_psystem1():
     r1 = ('A','ABY')
     r2 = ('B','BACY')
     r3 = ('C','ABCY')
@@ -141,7 +157,22 @@ def main():
     m3 = Membrane(a1, [r1,r2])
     m2 = Membrane(a2, [r2,r3], [m3])
     m1 = Membrane(a1, [r1,r2])
-    p = PSystem('A', [m1,m2], 1)
+    psys = PSystem('A', [m1,m2], 1)
+    return psys
+
+# test membrane dissolve
+def test_psystem2():
+    r1 = ('a','b')
+    r2 = ('b','_')
+    s1 = 'a'
+    s2 = 'b'
+    m2 = Membrane(s2, [r2])
+    m1 = Membrane(s1, [r1], [m2])
+    psys = PSystem('z', [m1], 1)
+    return psys
+
+def main():
+    p = test_psystem2()
     while p.generation < 3:
         print ('====================\n')
         print ('GENERATION: ' + str(p.generation) + '\n')
