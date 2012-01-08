@@ -171,6 +171,31 @@ def test_psystem2():
     psys = PSystem('z', [m1], 1)
     return psys
 
+def test_psystem3():
+    """Intended to be exactly the same as psystem2, but constructed in
+    a single call."""
+    psys = PSystem('z', [Membrane('a', [('a', 'b')], [
+        Membrane('b', [('b', '_')])])], 1)
+    return psys
+
+def test_psystem4():
+    """A randomly-generated one using the psystem.bnf grammar.
+    Here's another random one:
+
+    psys = PSystem("nNN", [Membrane("++mM{--}++{{FF+}}FFFnFNC[n+]nM", [("n", "[[F]]"),("C", "+m"),("m", "[FC]")], [])], 1)
+
+    Can generate more like this:
+
+    >>> import random; import ponyge
+    >>> g = ponyge.Grammar("grammars/psystem.bnf")
+    >>> genome = [random.randint(0, 100) for i in range(200)]
+    >>> g.generate(genome)
+    """
+
+    psys = PSystem("F{M{FMM}}", [Membrane("n[[F]]+Fn", [("-", "+m"),("+", "+")], [Membrane("FCnF", [("M", "nF"),("F", "+N")], []),Membrane("C", [("-", "{-+}"),("-", "nF{F}")], [])]),Membrane("{[{[m]}]}", [("N", "MF")], [])], 1)
+
+    return psys
+
 def main():
     p = test_psystem2()
     while p.generation < 3:
