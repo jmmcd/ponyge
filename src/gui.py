@@ -26,6 +26,7 @@ from idlelib.textView import view_file # TextViewer
 from imp import reload
 import ponyge
 from lsystem import *
+from psystem import *
 import drawing
 
 import turtle
