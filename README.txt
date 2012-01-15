@@ -92,19 +92,24 @@ GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/hofBoolean.pybnf", \
 EvenNParityFitness(3)
 
 
-L-System
---------
+L-System and P-system
+---------------------
 
-The most interesting example. Run it like this (no need to make any
+The most interesting examples. Run it like this (no need to make any
 source code changes):
 
-$ ./gui.py
+$ ./start-lsystem.sh
+
+Or:
+
+$ ./start-psystem.sh
 
 You'll be presented with a GUI showing nine drawings in a 3x3 grid of
 cells. You click on the ones you like, and click "Next" (or hit space)
 to iterate the algorithm. The drawings are made using a custom
-L-system whose possible forms are specified by the grammar. The files
-gui.py, drawing.py, and lsystem.py all belong to this example.
+L-system or P-system whose possible forms are specified by the
+grammar. The files gui.py, drawing.py, lsystem.py, psystem.py,
+grammars/lsystem.bnf, grammars/psystem.bnf all belong to this example.
 
 
 N-Player Iterated Prisoner's Dilemma
