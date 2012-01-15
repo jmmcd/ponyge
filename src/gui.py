@@ -148,6 +148,7 @@ class GUI(object):
     def __init__(self, filename=None):   #, root=None):
         self.root = root = turtle._root = Tk()
         root.wm_protocol("WM_DELETE_WINDOW", self._destroy)
+        root.resizable(width=FALSE, height=FALSE)
 
         #################
         self.mBar = Frame(root, relief=RAISED, borderwidth=2)
@@ -182,7 +183,7 @@ class GUI(object):
         self.graph_frame = g_frame = Frame(root)
 
         turtle._Screen._root = g_frame
-        turtle._Screen._canvas = turtle.ScrolledCanvas(g_frame, 600, 600, 600, 600)
+        turtle._Screen._canvas = turtle.ScrolledCanvas(g_frame, 700, 700, 700, 700)
         #xturtle.Screen._canvas.pack(expand=1, fill="both")
         self.screen = _s_ = turtle.Screen()
 #####
