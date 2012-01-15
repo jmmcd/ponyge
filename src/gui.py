@@ -225,6 +225,18 @@ class GUI(object):
         self.dirty = False
         self.exitflag = False
         self.configGUI(NORMAL, DISABLED, DISABLED, DISABLED, DISABLED, DISABLED, INSTRUCTIONS)
+
+        # bring the window to front
+        root.attributes('-topmost', 1)
+        root.attributes('-topmost', 0)
+        # none of these succeeds in bringing to front
+        # root.lift()
+        # root.tkraise()
+        # none of these succeeds in focussing
+        # root.focus()
+        # root.focus_force()
+        # self.next_btn.focus_force()
+
         self.state = STARTUP
         self.nextGeneration()
 
