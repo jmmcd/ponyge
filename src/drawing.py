@@ -66,114 +66,114 @@ class Drawing(turtle.Turtle):
             for force_field in self.force_fields:
                 force_field.force_field_effect(self)
 
-    def f(self): 
+    def f(self):
         """Forward no drawing"""
         self.penup()
         self.forward(self.step)
         self.force_field()
 
-    def F(self): 
+    def F(self):
         """Forward drawing"""
         self.pendown()
         self.forward(self.step)
         self.penup()
         self.force_field()
 
-    def C(self): 
+    def C(self):
         """Drawing an arc with radius step and angle circle_angle"""
         self.pendown()
         self.circle(self.step, self.circle_angle)
         self.penup()
 
-    def D(self): 
+    def D(self):
         """Drawing a dot of default size"""
         self.dot()
 
-    def r(self): 
+    def r(self):
         """Turning right"""
         self.right(self.angle)
 
-    def l(self): 
+    def l(self):
         """Turning left"""
         self.left(self.angle)
 
-    def S(self): 
+    def S(self):
         """Increase step size"""
         self.step += self.STEP
         if self.step >= 20:
             self.step = 20
 
-    def s(self): 
+    def s(self):
         """Decrease step size"""
         self.step -= self.STEP
         if self.step <= 2:
             self.step = 2
 
-    def polygon_begin(self): 
+    def polygon_begin(self):
         """Begin polygon"""
         self.begin_poly()
         self.begin_fill()
 
-    def polygon_end(self): 
+    def polygon_end(self):
         """End polygon"""
         self.end_poly()
         self.end_fill()
 
-    def a(self): 
+    def a(self):
         """Decrease angle"""
         self.ANGLE -= 1
         self.ANGLE %= len(self.set_angles)
         self.angle = self.set_angles[self.ANGLE]
 
-    def A(self): 
+    def A(self):
         """Increase angle"""
         self.ANGLE += 1
         self.ANGLE %= len(self.set_angles)
         self.angle += self.set_angles[self.ANGLE]
 
-    def X(self): 
+    def X(self):
         """Do nothing"""
         pass
 
-    def n(self): 
+    def n(self):
         """Increase pen palette parameter"""
         self.pen_colour += 1
         self.pencolor(self.map_colour(self.pen_colour))
 
-    def m(self): 
+    def m(self):
         """Decrease pen palette parameter"""
         self.pen_colour -= 1
         self.pencolor(self.map_colour(self.pen_colour))
 
-    def N(self): 
+    def N(self):
         """Increase fill palette parameter"""
         self.fill_colour += 1
         self.fillcolor(self.map_colour(self.fill_colour))
 
-    def M(self): 
+    def M(self):
         """Decrease fill palette parameter"""
         self.fill_colour -= 1
         self.fillcolor(self.map_colour(self.fill_colour))
 
-    def w(self): 
+    def w(self):
         """Decrease pen width"""
         self.pen_width /= 1.05
         if self.pen_width < 0.5:
             self.pen_width = 0.5
         self.width(self.pen_width)
 
-    def W(self): 
+    def W(self):
         """Increase pen width"""
         self.pen_width *= 1.05
         if self.pen_width > 3:
             self.pen_width = 3
         self.width(self.pen_width)
 
-    def _push(self): 
+    def _push(self):
         """Push the (position, heading) to the stack"""
         self.stack.append(self.make_state())
 
-    def _pop(self): 
+    def _pop(self):
         """Pop and set the (position, heading) from the stack"""
         self.set_state(self.stack.pop())
 
@@ -243,6 +243,7 @@ class Drawing(turtle.Turtle):
             if (self.max_length is not None and
                 len(self.grammar_system.string) > self.max_length):
                 self.hideturtle()
+                print("Drawing exceeded maximum length")
                 return False
         print(self.grammar_system.string)
 
@@ -262,6 +263,7 @@ class Drawing(turtle.Turtle):
         """Call the function in the command specified by the passed in rules"""
         null_drawing = not any(d in commands for d in self.drawing_commands)
         if null_drawing:
+            print("No drawing commands in drawing string")
             return False
         for b in commands:
             # Removed exception-handling -- if there's a bad command,

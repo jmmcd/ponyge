@@ -375,6 +375,7 @@ class GUI(object):
     # actually paint something.
     def draw_phenotype(self, phenotype, x, y, w, h):
         if phenotype is None:
+            print("Invalid phenotype")
             return False
         print(phenotype)
         phenotype = "drawing." + phenotype
