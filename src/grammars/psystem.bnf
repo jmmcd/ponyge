@@ -1,11 +1,11 @@
 <s> ::= Drawing(<psystem>, <depth>, angle=<angle>, step=<step>, colour1=<colour>, colour2=<colour>, circle_angle=<angle>)
-<psystem> ::= PSystem(<axiom>, [<membranes>], <secrete_type>)
-<membranes> ::= <membrane> | <membrane>,<membrane> | <membrane>,<membrane>,<membrane>
+<psystem> ::= PSystem(<axiom>, [<membrane>], <secrete_type>)
+<membranes> ::= <membrane> | <membrane>,<membrane> | <membrane>,<membrane>
 <membrane> ::= Membrane(<axiom>, [<rules>], [<optional_membranes>])
-<optional_membranes> ::= | <membrane> | <membrane>,<membrane>
+<optional_membranes> ::= | <membrane>
 <secrete_type> ::= 0 | 1
 <axiom> ::= "<code>" | "<code><code>"
-<rules> ::= <rule> | <rule>,<rule> | <rules>,<rule> | <rules>,<rule>
+<rules> ::= <rule> | <rule>,<rule> | <rule>,<rule> | <rule>,<rule>,<rule>
 <rule> ::= ("<char>", "<rhs>")
 <depth> ::=  3 | 4 | 5 | 6
 <angle> ::= 10 | 12 | 15 | 20 | 24 | 27.5 | 30 | 360.0 / 11 | 36.0 | 40.0 | 45 | 360.0 / 7 | 60 | 72 | 90
