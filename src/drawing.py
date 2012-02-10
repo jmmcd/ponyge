@@ -23,6 +23,7 @@ import lsystem
 import re
 import math
 import sys
+import time
 
 class Attractor:
     """Attractor or repulsor"""
@@ -224,6 +225,7 @@ class Drawing(turtle.Turtle):
                        }
         self.drawing_commands = "FCD}"
         self.stack = []
+        self.force_fields = []
 
     # Return True if the phenotype does not exceed maximum length, and
     # drawing contains some commands which actually paint something.
@@ -247,7 +249,6 @@ class Drawing(turtle.Turtle):
                 return False
         print(self.grammar_system.string)
 
-        self.force_fields = []
         if force_fields:
             for force_field in force_fields:
                 self.force_fields.append(Attractor(force_field['type'], force_field['effect'], force_field['x'], force_field['y'], force_field['size']))
@@ -328,16 +329,18 @@ def curve_branch(depth=3):
     _drawing = Drawing(_lsystem, depth, angle=22.5, step=40, circle_angle=20.5, STEP=2)
     _drawing.draw(0,0,1000,750)
 
-def doodle(depth=3):
-    _lsystem = lsystem.LSystem('DCa',[('C','CaD++[sCDsCD]++CaD'),('F','')])
+def doodle():
+    # _lsystem is basically ignored
+    _lsystem = lsystem.LSystem('f',[('f','f')])
     _drawing = Drawing(_lsystem,
-                       3, angle=90,
+                       1, angle=90,
                        step=10,
                        colour1=(200, 50, 50),
                        colour2=(50, 200, 50),
                        circle_angle=20.5,
                        STEP=2, ANGLE=5)
-    _drawing.draw(0,0,1000,750)
+    # we draw this hand-written string
+    _drawing._draw("F+F+F+F+CF+CF+CF+CF+", _drawing._rules)
 
 def six_pointed_star(depth=3):
     """A nice 6-pointed angled star"""
@@ -346,6 +349,7 @@ def six_pointed_star(depth=3):
                        colour1=(200, 50, 50), colour2=(50, 200, 50),
                        circle_angle=20.5, STEP=2, ANGLE=5)
     _drawing.draw(0,0,1000,750)
+
 
 if __name__ == "__main__":
 
@@ -357,5 +361,4 @@ if __name__ == "__main__":
     six_pointed_star()
 
     while True:
-        from time import sleep
-        sleep(3)
+        time.sleep(1)
