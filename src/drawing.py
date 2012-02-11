@@ -329,26 +329,34 @@ def curve_branch(depth=3):
     _drawing = Drawing(_lsystem, depth, angle=22.5, step=40, circle_angle=20.5, STEP=2)
     _drawing.draw(0,0,1000,750)
 
+def six_pointed_star(depth=3):
+    """A nice 6-pointed angled star"""
+    _lsystem = lsystem.LSystem("F", [("F", "m[F-F++F-F]")])
+    _drawing = Drawing(_lsystem, 4, angle=60, step=50,
+                       colour1=(200, 50, 50), colour2=(50, 200, 50),
+                       circle_angle=20.5, STEP=2, ANGLE=5)
+    _drawing.draw(0,0,1000,750)
+
+def sierpinski(depth=3):
+    """Simplest L-system example."""
+    _lsystem = lsystem.LSystem("F", [("F", "F-F++F-F")])
+    _drawing = Drawing(_lsystem, depth, angle=60, step=100.0 / (depth ** 2.0),
+                      colour1=(200, 50, 50), colour2=(50, 200, 50),
+                      circle_angle=20.5, STEP=2, ANGLE=5)
+    _drawing.draw(0,0,1000,750)
+
 def doodle():
     # _lsystem is basically ignored
     _lsystem = lsystem.LSystem('f',[('f','f')])
     _drawing = Drawing(_lsystem,
                        1, angle=90,
-                       step=10,
+                       step=100,
                        colour1=(200, 50, 50),
                        colour2=(50, 200, 50),
                        circle_angle=20.5,
                        STEP=2, ANGLE=5)
     # we draw this hand-written string
-    _drawing._draw("F+F+F+F+CF+CF+CF+CF+", _drawing._rules)
-
-def six_pointed_star(depth=3):
-    """A nice 6-pointed angled star"""
-    _lsystem = lsystem.LSystem("F", [("F", "m[F-F++F-F]")])
-    _drawing = Drawing(_lsystem, 4, angle=60, step=10,
-                       colour1=(200, 50, 50), colour2=(50, 200, 50),
-                       circle_angle=20.5, STEP=2, ANGLE=5)
-    _drawing.draw(0,0,1000,750)
+    _drawing._draw("FF+F+FF+DF+D", _drawing._rules)
 
 
 if __name__ == "__main__":
@@ -357,8 +365,8 @@ if __name__ == "__main__":
     # pyramid()
     # curve_branch()
     # simple_branch()
+    # six_pointed_star()
+    sierpinski(4)
     # doodle()
-    six_pointed_star()
 
-    while True:
-        time.sleep(1)
+    time.sleep(5)
