@@ -337,7 +337,7 @@ def six_pointed_star(depth=3):
                        circle_angle=20.5, STEP=2, ANGLE=5)
     _drawing.draw(0,0,1000,750)
 
-def sierpinski(depth=3):
+def koch(depth=3):
     """Simplest L-system example."""
     _lsystem = lsystem.LSystem("F", [("F", "F-F++F-F")])
     _drawing = Drawing(_lsystem, depth, angle=60, step=100.0 / (depth ** 2.0),
@@ -366,7 +366,7 @@ if __name__ == "__main__":
     # curve_branch()
     # simple_branch()
     # six_pointed_star()
-    sierpinski(4)
-    # doodle()
+    # koch(4)
+    doodle()
 
     time.sleep(5)
