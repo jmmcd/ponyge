@@ -1,4 +1,4 @@
-- Make README in rst
+- Make README in rst or markdown or similar
 
 - Use compile if the evolved function will be used multiple times
 
@@ -50,3 +50,21 @@
   if they'd be interested in some kind of endorsement or field-test:
   http://www.irishtimes.com/newspaper/breaking/2011/1130/breaking53.html.
   The company was http://www.reddog.ie/
+
+- Keep generating individuals until a picture is actually drawn, ie
+  invalid and null pictures should be replaced.
+
+- For the symbolic regression and boolean problems, use Numpy.
+
+- Use logging and pdb and pylint for nicer
+  code. http://www.reddit.com/tb/rwj1a
+
+- Extended BNF (Erik)
+
+- Force Fields (Jonathan)
+
+- 3D (Eoin)
+
+- Generalise the GUI so that it can be used for any type of interactive EC
+
+- Murphy Cup and enter GECCO art competition
