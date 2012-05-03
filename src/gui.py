@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 # GUI for interactive GE with PonyGE. Uses TK to create a simple GUI
 # and turtle graphics to draw a grid of spaces for individuals.
