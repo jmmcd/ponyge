@@ -447,9 +447,9 @@ GENERATIONS = 30
 MUTATION_PROBABILITY = 0.01
 CROSSOVER_PROBABILITY = 0.7
 #GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/hofBoolean.pybnf", EvenNParityFitness(3)
-#GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/letter.bnf", StringMatch("golden")
+GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/letter.bnf", StringMatch("golden")
 #GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/arithmetic.pybnf", MaxFitness()
-GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/boolean.pybnf", XORFitness()
+#GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/boolean.pybnf", XORFitness()
 
 def mane():
     """ Run program """

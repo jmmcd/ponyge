@@ -25,6 +25,7 @@ Running PonyGE
 We don't provide any setup script. You can run an example problem (the
 default is String-match, see below) just by saying:
 
+$ cd src
 $ ./ponyge.py
 
 Each line of the output corresponds to a generation in the evolution,
