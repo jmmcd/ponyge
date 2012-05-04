@@ -108,14 +108,23 @@ class MyTurtle(object):
 
     def index_to_pixel(self, idx, axis="x"):
         if axis == "x":
+            assert(0 <= idx < self.n)
             return -self.width / 2.0 + idx * self.xside + self.margin
         else:
+            assert(0 <= idx < self.m)
             return -self.height / 2.0 + idx * self.yside + self.margin
+
+    # Clamp the value to a legal value
     def pixel_to_index(self, pixel, axis="x"):
         if axis == "x":
-            return int(pixel + self.width / 2.0) // int(self.xside)
+            result = int(pixel + self.width / 2.0) // int(self.xside)
+            result = min(self.n - 1, result)
+            result = max(0, result)
         else:
-            return int(pixel + self.height / 2.0) // int(self.yside)
+            result = int(pixel + self.height / 2.0) // int(self.yside)
+            result = min(self.m - 1, result)
+            result = max(0, result)
+        return result
 
     def drawFrame(self, i, j, colour=None):
         if colour is not None:
