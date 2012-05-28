@@ -56,6 +56,9 @@
 
 - For the symbolic regression and boolean problems, use Numpy.
 
+- Try using a quotient operator
+  http://www.cs.bham.ac.uk/~wbl/biblio/gp-html/Ni_2012_ieeeTEC.html
+
 - Use logging and pdb and pylint for nicer
   code. http://www.reddit.com/tb/rwj1a
 
@@ -65,6 +68,16 @@
 
 - 3D (Eoin)
 
-- Generalise the GUI so that it can be used for any type of interactive EC
+- Generalise the GUI so that it can be used for any type of
+  interactive EC -- maybe a pure web-GUI in JS/HTML5/WebGL? (James)
 
 - Murphy Cup and enter GECCO art competition
+
+- A button/shortcut for saving desktop backgrounds and screensavers
+
+- Web interface
+
+- Dave suggests: a library of shapes etc that could be used to inject
+  specific structures. Given an existing structure, the user decides
+  that a specific new shape is needed, so goes to the inject menu to
+  select from some predefined shapes.
