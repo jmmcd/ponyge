@@ -17,23 +17,23 @@ def eval_or_exec(expr):
 
     #print(s)
     try:
-        try:
-            retval = eval(expr)
-        except SyntaxError:
-            # SyntaxError will be thrown by eval() if s is compound,
-            # ie not a simple expression, eg if it contains function
-            # definitions, multiple lines, etc. Then we must use
-            # exec(). Then we assume that s will define a variable
-            # called "XXXeval_or_exec_outputXXX", and we'll use that.
-            dictionary = {}
-            exec(expr, dictionary)
-            retval = dictionary["XXXeval_or_exec_outputXXX"]
+        retval = eval(expr)
+    except SyntaxError:
+        # SyntaxError will be thrown by eval() if s is compound,
+        # ie not a simple expression, eg if it contains function
+        # definitions, multiple lines, etc. Then we must use
+        # exec(). Then we assume that s will define a variable
+        # called "XXXeval_or_exec_outputXXX", and we'll use that.
+        dictionary = {}
+        exec(expr, dictionary)
+        retval = dictionary["XXXeval_or_exec_outputXXX"]
     except MemoryError:
         # Will be thrown by eval(s) or exec(s) if s contains over-deep
         # nesting (see http://bugs.python.org/issue3971). The amount
         # of nesting allowed varies between versions, is quite low in
-        # Python2.5. If we can't evaluate, award bad fitness.
-        retval = fitness.default_fitness(FITNESS_FUNCTION.maximise)
+        # Python2.5. If we can't evaluate, phenotype is marked
+        # invalid.
+        retval = None
     return retval
 
 def default_fitness(maximise):
