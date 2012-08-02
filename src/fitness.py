@@ -2,6 +2,10 @@
 
 import random
 import operator
+from itertools import product
+import numpy as np
+from numpy import logical_and, logical_or, logical_xor, logical_not
+np.seterr(all='raise')
 
 def eval_or_exec(expr):
     """Use eval or exec to interpret expr.
@@ -59,80 +63,42 @@ class SizeFitness:
         functions."""
         return abs(self.target_size - len(ind))
 
-class XORFitness():
-    """XOR fitness function with python evaluation."""
-    maximise = True
-    def __call__(self, candidate):
-        function = eval(candidate)
-        fitness = 0
-        for x_0 in [False, True]:
-            for x_1 in [False, True]:
-                if function(x_0, x_1) == operator.xor(x_0, x_1):
-                    fitness += 1
-        return fitness
-
-class EvenNParityFitness():
-    """EvenNParity fitness function with python evaluation."""
-
-    maximise = True
-
-    def head(self, xes):
-        """Takes a list and returns the head"""
-        return xes[0]
-
-    def tail(self, xes):
-        """Takes a list and returns the list with its head removed."""
-        return xes[1:]
-
-    def nand(self, x_0, x_1):
-        """ Boolean nand """
-        return not operator.and_(x_0, x_1)
-
-    def nor(self, x_0, x_1):
-        """ Boolean nor """
-        return not operator.or_(x_0, x_1)
-
-    def _and(self, x_0, x_1):
-        """ Boolean and """
-        return operator.and_(x_0, x_1)
-
-    def _or(self, x_0, x_1):
-        """ Boolean or """
-        return operator.or_(x_0, x_1)
-
-    def __init__(self, size):
-        """0 is False, 1 is True. Lookup tables for parity input and
-        output. Size is the number of inputs"""
-        self._output = [None] * 2**size
-        self._input = []
-        for i in range(len(self._output)):
-            self._output[i] = (bin(i).count('1') % 2) == 0
-            self._input.append([False] * size)
-            for j, cnt in zip(bin(i)[2:][::-1], range(size)):
-                if j == '1':
-                    self._input[-1][cnt] = True
-
-        self._input = tuple(self._input)
-        self._output =  tuple(self._output)
-
-    def __call__(self, candidate):
-        """Compare the output generated from the input by the
-        candidate with the output given by the input in the lookup
-        table."""
-        code = compile(candidate, '<string>', 'eval')
-        function = eval(code, locals())
-        fitness = 0
-        for x_0, x_1 in zip(self._output, self._input):
-            try:
-                if function(x_1) is x_0:
-                    fitness += 1
-            except (TypeError, IndexError, MemoryError):
-                fitness = default_fitness(self.maximise)
-                break
-        return fitness
-
 class MaxFitness():
     """Arithmetic maximisation with python evaluation."""
     maximise = True
     def __call__(self, candidate):
         return eval_or_exec(candidate)
+
+
+class BooleanProblem:
+    """Boolean problem of size n. Pass target function in.
+    Minimises. Objects of this type can be called."""
+
+    # TODO could benchmark this versus sub-machine code
+    # implementation.
+    def __init__(self, n, target):
+        self.maximise = False
+        
+        # make all possible fitness cases
+        vals = [False, True]
+        p = list(product(*[vals for i in range(n)]))
+        self.x = np.transpose(p)
+
+        # get target function's values on fitness cases
+        try:
+            # assume target is a function
+            self.target_cases = target(self.x)
+        except TypeError:
+            # no, target was a list of values
+            if len(target) != 2 ** n:
+                s = "Wrong number of target cases (%d) for problem size %d" % (
+                    len(target), n)
+                raise ValueError(s)
+            self.target_cases = np.array(target)
+
+    def __call__(self, s):
+        # s is a string which evals to a fn.
+        fn = eval(s)
+        output = fn(self.x)
+        non_matches = output ^ self.target_cases
+        return sum(non_matches) # Fitness is number of errors

@@ -342,10 +342,11 @@ GENERATION_SIZE = 100
 GENERATIONS = 30
 MUTATION_PROBABILITY = 0.01
 CROSSOVER_PROBABILITY = 0.7
-#GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/hofBoolean.pybnf", fitness.EvenNParityFitness(3)
-GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/letter.bnf", StringMatch("golden")
+GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/boolean_hof.bnf", fitness.BooleanProblem(5, lambda x: (x[0] ^ x[1] ^ x[2] ^ x[3] ^ x[4]))
+#GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/boolean.bnf", fitness.BooleanProblem(5, lambda x: (x[0] ^ x[1] ^ x[2] ^ x[3] ^ x[4]))
+#GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/letter.bnf", StringMatch("golden")
 #GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/arithmetic.pybnf", fitness.MaxFitness()
-#GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/boolean.pybnf", fitness.XORFitness()
+
 
 def mane():
     """Run program"""

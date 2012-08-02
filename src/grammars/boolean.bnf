@@ -1,0 +1,4 @@
+<code> ::= lambda x: <expr>
+<expr> ::= <var> | <var> | <op>
+<var>  ::= x[0] | x[1] | x[2] | x[3] | x[4]
+<op> ::= (<expr> & <expr>) | (<expr> \| <expr>) | ~<expr>
