@@ -46,9 +46,15 @@ class Grammar(object):
                         self.start_rule = (lhs, self.NT)
                     # Find terminals
                     tmp_productions = []
-                    for production in [production.strip()
-                                       for production in
-                                       productions.split(production_separator)]:
+                    productions = productions.split(production_separator)
+                    # Check for escaped symbol "\|"
+                    for i in range(len(productions) - 1):
+                        if productions[i].endswith("\\"):
+                            repair = (productions[i][:-1] +
+                                      production_separator + productions[i+1])
+                            productions[i:i+2] = [repair]
+                    for production in productions:
+                        production = production.strip()
                         tmp_production = []
                         if not re.search(non_terminal_pattern, production):
                             self.terminals.add(production)
@@ -471,7 +477,6 @@ if __name__ == "__main__":
     import getopt
     try:
         # FIXME help option
-        print(sys.argv)
         OPTS, ARGS = getopt.getopt(sys.argv[1:], "vp:g:e:m:x:b:f:",
                                    ["verbose", "population", "generations",
                                     "elite_size", "mutation", "crossover",
