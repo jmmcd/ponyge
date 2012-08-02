@@ -1,14 +1,16 @@
 #! /usr/bin/env python
 
 # PonyGE
-# Copyright (c) 2009 Erik Hemberg and James McDermott
+# Copyright (c) 2009-2012 Erik Hemberg and James McDermott
 # Hereby licensed under the GNU GPL v3.
-""" Small GE implementation """
+# http://ponyge.googlecode.com
+
+"""Small GE implementation."""
 
 import sys, copy, re, random, math, operator
 
 class Grammar(object):
-    """ Context Free Grammar """
+    """Context Free Grammar"""
     NT = "NT" # Non Terminal
     T = "T" # Terminal
 
@@ -115,7 +117,7 @@ class Grammar(object):
         return (output, used_input)
 
 def python_filter(txt):
-    """ Create correct python syntax.
+    """Create correct python syntax.
 
     We use {: and :} as special open and close brackets, because
     it's not possible to specify indentation correctly in a BNF
@@ -140,7 +142,7 @@ def python_filter(txt):
     return txt
 
 def eval_or_exec(expr):
-    """ Use eval or exec to interpret expr.
+    """Use eval or exec to interpret expr.
 
     A limitation in Python is the distinction between eval and
     exec. The former can only be used to return the value of a simple
@@ -285,7 +287,7 @@ class Individual(object):
                 str(self.phenotype) + "; " + str(self.fitness))
 
     def evaluate(self, fitness):
-        """ Evaluates phenotype in fitness function and sets fitness"""
+        """Evaluates phenotype in fitness function and sets fitness"""
         self.fitness = fitness(self.phenotype)
 
 def initialise_population(size=10):
@@ -295,10 +297,10 @@ def initialise_population(size=10):
 def print_stats(generation, individuals):
     """Print the statistics for the generation and individuals"""
     def ave(values):
-        """ Return the average of the values """
+        """Return the average of the values """
         return float(sum(values))/len(values)
     def std(values, ave):
-        """ Return the standard deviation of the values and average """
+        """Return the standard deviation of the values and average """
         return math.sqrt(float(sum((value-ave)**2 for value in values))/len(values))
 
     valid_inds = [i for i in individuals if i.phenotype is not None]
@@ -317,7 +319,7 @@ def print_stats(generation, individuals):
             ave_used_codons, std_used_codons, individuals[0]))
 
 def default_fitness(maximise):
-    """ Return default fitness given maximization of minimization"""
+    """Return default fitness given maximization of minimization"""
     if maximise:
         return -100000.0
     else:
@@ -372,7 +374,7 @@ def onepoint_crossover(p_0, p_1, within_used=True):
     return [Individual(c_0), Individual(c_1)]
 
 def evaluate_fitness(individuals, grammar, fitness_function):
-    """ Perform the mapping for each individual """
+    """Perform the mapping for each individual """
     for ind in individuals:
         ind.phenotype, ind.used_codons = grammar.generate(ind.genome)
         if ind.phenotype != None:
@@ -383,7 +385,7 @@ def evaluate_fitness(individuals, grammar, fitness_function):
         fitness_function.__call__(individuals)
 
 def interactive_evaluate_fitness(individuals, grammar, callback):
-    """ Used for interactive evolution. Perform mapping and set dummy fitness"""
+    """Used for interactive evolution. Perform mapping and set dummy fitness"""
     evaluate_fitness(individuals, grammar, lambda x: 0.0)
     fitness_values = callback()
     for i, individual in enumerate(individuals):
@@ -452,7 +454,7 @@ GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/letter.bnf", StringMatch("golden")
 #GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/boolean.pybnf", XORFitness()
 
 def mane():
-    """ Run program """
+    """Run program"""
     # Read grammar
     bnf_grammar = Grammar(GRAMMAR_FILE)
     if VERBOSE:
@@ -468,7 +470,7 @@ def mane():
 if __name__ == "__main__":
     import getopt
     try:
-        #FIXME help option
+        # FIXME help option
         print(sys.argv)
         OPTS, ARGS = getopt.getopt(sys.argv[1:], "vp:g:e:m:x:b:f:",
                                    ["verbose", "population", "generations",
@@ -476,7 +478,7 @@ if __name__ == "__main__":
                                     "bnf_grammar", "fitness_function"])
     except getopt.GetoptError as err:
         print(str(err))
-        #FIXME usage
+        # FIXME usage
         sys.exit(2)
     for opt, arg in OPTS:
         if opt in ("-v", "--verbose"):
@@ -497,5 +499,5 @@ if __name__ == "__main__":
         elif opt in ("-f", "--fitness_function"):
             FITNESS_FUNCTION = eval(arg)
         else:
-            assert False, "unhandeled option"
+            assert False, "unhandled option"
     mane()
