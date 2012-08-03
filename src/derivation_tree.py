@@ -46,9 +46,10 @@ def get_subtree(t, path):
         t = t[item]
     return t
     
-def depth(item):
-    """The depth of any node is the length of its path, minus 1."""
-    return len(path(item)) - 1
+def depth(path):
+    """The depth of any node is the number on nonzero elements in its
+    path."""
+    return len([el for el in path if el != 0])
 
 def derived_str(dt, grammar):
     """Get the derived string."""
@@ -151,7 +152,8 @@ def main():
     print "node (1,)", get_node(dt, (1,))
     print "subtree (1, 1)", get_subtree(dt, (1, 1))
     print "node (1, 1)", get_node(dt, (1, 1))
-
+    print "depth of node (1, 1)", depth((1, 1))
+    
     ds = random_dt(grammar)
     print "ds", ds
     print "ds derivation", derived_str(ds, grammar)
