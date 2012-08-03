@@ -54,7 +54,10 @@
 - Keep generating individuals until a picture is actually drawn, ie
   invalid and null pictures should be replaced.
 
-- For the symbolic regression and boolean problems, use Numpy.
+- For the symbolic regression and boolean problems, use Numpy (James)
+  (done for Boolean).
+
+- Use derivation trees as genomes (James) (mostly done).
 
 - Try using a quotient operator
   http://www.cs.bham.ac.uk/~wbl/biblio/gp-html/Ni_2012_ieeeTEC.html

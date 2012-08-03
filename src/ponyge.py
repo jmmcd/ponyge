@@ -9,6 +9,7 @@
 
 import sys, copy, re, random, math, operator
 import fitness
+import derivation_tree as dt
 
 class Grammar(object):
     """Context Free Grammar"""
@@ -187,13 +188,36 @@ class Individual(object):
         return ("Individual: " +
                 str(self.phenotype) + "; " + str(self.fitness))
 
+    def generate(self, grammar):
+        self.phenotype, self.used_codons = grammar.generate(self.genome)
+
     def evaluate(self, fitness):
         """Evaluates phenotype in fitness function and sets fitness"""
         self.fitness = fitness(self.phenotype)
 
-def initialise_population(size=10):
-    """Create a popultaion of size and return"""
-    return [Individual(None) for _ in range(size)]
+class DTIndividual(Individual):
+    """An individual with a derivation tree genome instead of
+    integer-array."""
+    def __init__(self, genome, grammar):
+        if genome == None:
+            self.genome = dt.random_dt(grammar)
+        else:
+            self.genome = genome
+        self.fitness = fitness.default_fitness(FITNESS_FUNCTION.maximise)
+        self.phenotype = None
+        self.compiled_phenotype = None
+        self.used_codons = 0
+
+    def generate(self, grammar):
+        self.phenotype = dt.derived_str(self.genome)
+
+def initialise_population(size, grammar=None):
+    """Create a population of Individuals of the given size. If
+    grammar is passed-in, create DTIndividuals instead."""
+    if grammar:
+        return [DTIndividual(None, grammar) for _ in range(size)]
+    else:
+        return [Individual(None) for _ in range(size)]
 
 def print_stats(generation, individuals):
     """Print the statistics for the generation and individuals"""
@@ -227,6 +251,11 @@ def int_flip_mutation(individual):
         if random.random() < MUTATION_PROBABILITY:
             individual.genome[i] = random.randint(0, CODON_SIZE)
     return individual
+
+def dt_mutation(x, grammar):
+    """Given an individual whose genome is a DT, return a new
+    individual by mutation."""
+    return DTIndividual(dt.dt_mutation(copy.deepcopy(x.genome), grammar), grammar)
 
 # Two selection methods: tournament and truncation
 def tournament_selection(population, tournament_size=3):
@@ -267,10 +296,17 @@ def onepoint_crossover(p_0, p_1, within_used=True):
     # Put the new chromosomes into new individuals
     return [Individual(c_0), Individual(c_1)]
 
+def dt_crossover(t, s, grammar):
+    """Given individuals whose genomes are DTs, return new individuals
+    formed by crossover."""
+    newtrees = copy.deepcopy(t.genome), copy.deepcopy(s.genome)
+    dt.dt_crossover(newtrees[0], newtrees[1], grammar)
+    return [DTIndividual(newtree, grammar) for newtree in newtrees]
+
 def evaluate_fitness(individuals, grammar, fitness_function):
     """Perform the mapping for each individual """
     for ind in individuals:
-        ind.phenotype, ind.used_codons = grammar.generate(ind.genome)
+        ind.generate(grammar)
         if ind.phenotype != None:
             if not hasattr(fitness_function, "COEVOLUTION") or \
                     not fitness_function.COEVOLUTION:
@@ -303,7 +339,8 @@ def steady_state_replacement(new_pop, individuals):
     individuals[-1] = max(new_pop + individuals[-1:])
     return individuals
 
-def step(individuals, grammar, replacement, selection, fitness_function, best_ever):
+def step(individuals, grammar, crossover, mutation,
+         replacement, selection, fitness_function, best_ever):
     """Return individuals and best ever individual from a step of
     the EA iteration"""
     #Select parents
@@ -311,9 +348,9 @@ def step(individuals, grammar, replacement, selection, fitness_function, best_ev
     #Crossover parents and add to the new population
     new_pop = []
     while len(new_pop) < GENERATION_SIZE:
-        new_pop.extend(onepoint_crossover(*random.sample(parents, 2)))
+        new_pop.extend(crossover(*random.sample(parents, 2)))
     #Mutate the new population
-    new_pop = list(map(int_flip_mutation, new_pop))
+    new_pop = list(map(mutation, new_pop))
     #Evaluate the fitness of the new population
     evaluate_fitness(new_pop, grammar, fitness_function)
     #Replace the sorted individuals with the new populations
@@ -321,7 +358,9 @@ def step(individuals, grammar, replacement, selection, fitness_function, best_ev
     best_ever = max(best_ever, max(individuals))
     return individuals, best_ever
 
-def search_loop(max_generations, individuals, grammar, replacement, selection, fitness_function):
+def search_loop(max_generations, individuals, grammar,
+                crossover, mutation,
+                replacement, selection, fitness_function):
     """Loop over max generations"""
     #Evaluate initial population
     evaluate_fitness(individuals, grammar, fitness_function)
@@ -330,11 +369,13 @@ def search_loop(max_generations, individuals, grammar, replacement, selection, f
     print_stats(1, individuals)
     for generation in range(2, (max_generations+1)):
         individuals, best_ever = step(
-            individuals, grammar, replacement, selection, fitness_function, best_ever)
+            individuals, grammar, crossover, mutation,
+            replacement, selection, fitness_function, best_ever)
         print_stats(generation, individuals)
     return best_ever
 
 VERBOSE = False
+DERIVATION_TREE_GENOME = False
 CODON_SIZE = 127
 ELITE_SIZE = 1
 POPULATION_SIZE = 100
@@ -354,10 +395,17 @@ def mane():
     bnf_grammar = Grammar(GRAMMAR_FILE)
     if VERBOSE:
         print(bnf_grammar)
-    # Create Individuals
-    individuals = initialise_population(POPULATION_SIZE)
+    # Genetic operators: initialise, crossover, mutation
+    if DERIVATION_TREE_GENOME:
+        crossover = lambda x, y: dt_crossover(x, y, bnf_grammar)
+        mutation = lambda x: dt_mutation(x, bnf_grammar)
+        individuals = initialise_population(POPULATION_SIZE, bnf_grammar)
+    else:
+        crossover, mutation = onepoint_crossover, int_flip_mutation
+        individuals = initialise_population(POPULATION_SIZE)
     # Loop
     best_ever = search_loop(GENERATIONS, individuals, bnf_grammar,
+                            crossover, mutation,
                             generational_replacement, tournament_selection,
                             FITNESS_FUNCTION)
     print("Best " + str(best_ever))
@@ -366,8 +414,9 @@ if __name__ == "__main__":
     import getopt
     try:
         # FIXME help option
-        OPTS, ARGS = getopt.getopt(sys.argv[1:], "vp:g:e:m:x:b:f:",
-                                   ["verbose", "population", "generations",
+        OPTS, ARGS = getopt.getopt(sys.argv[1:], "vdp:g:e:m:x:b:f:",
+                                   ["verbose", "derivation_tree",
+                                    "population", "generations",
                                     "elite_size", "mutation", "crossover",
                                     "bnf_grammar", "fitness_function"])
     except getopt.GetoptError as err:
@@ -377,6 +426,8 @@ if __name__ == "__main__":
     for opt, arg in OPTS:
         if opt in ("-v", "--verbose"):
             VERBOSE = True
+        elif opt in ("-d", "--derivation_tree"):
+            DERIVATION_TREE_GENOME = True
         elif opt in ("-p", "--population"):
             POPULATION_SIZE = int(arg)
             GENERATION_SIZE = int(arg)
