@@ -24,7 +24,6 @@ import copy
 # TODO avoid crossing-over identical subtrees
 # TODO avoid mutating-in identical subtree
 # TODO implement a max-depth (we have the depth value of every node)
-# TODO allow crossover at start symbol, but not if both xover pts are root
 # TODO should crossover/mutation work on terminals?
 # TODO set the number of nodes in the tree as the number of codons for ponyge
 # TODO how should the experiments go -- vanilla ponyge v derivation tree, or should they start from the same place (ie use same initialisation)
@@ -82,49 +81,56 @@ def dt_mutation(t, grammar):
     """Given a derivation tree, mutate it by choosing a non-terminal
     and growing from there according to the grammar."""
     
-    # Get all the items in t, excluding the start symbol and terminals
-    t_pts = [p for p in traverse(t)
-             if p[0] not in grammar.terminals
-             and p[0] != grammar.start_rule[0]]
+    # Get all the items in t, excluding the root and terminals.
+    m_pts = [p for p in list(traverse(t))[1:]
+             if p[0] not in grammar.terminals]
 
-    # Choose a point uniformly among the points.
-    m_pt = random.choice(t_pts)    
+    # Choose a point *uniformly among the points*
+    m_pt = random.choice(m_pts)
 
     # Get the *subtree of the parent* (ie traverse up to path element
     # -2) of the mutation point, to allow insertion. See comment in
     # dt_crossover().
-    t_ins_pt = get_subtree(t, path(m_pt)[:-2])
+    m_pt_pth = path(m_pt)
+    assert len(m_pt_pth) >= 2
+    m_ins_pt = get_subtree(t, m_pt_pth[:-2])
+
+    # Get the index in the parent list at which to paste
+    m_idx = m_pt_pth[-2]
+
+    # Get the new random subtree to be pasted
+    m_subtree = random_dt(grammar, m_pt[0])
     
-    # Perform the mutation: it's just a new random_dt()
-    t_ins_pt[path(m_pt)[-2]] = random_dt(grammar, m_pt[0])
+    # Perform the mutation
+    m_ins_pt[m_idx] = m_subtree
 
 def dt_crossover(t, s, grammar):
     """Cross two trees over, but only on matching non-terminals."""
     
-    # Get all the items in t and in s
-    t_pts = list(traverse(t))
-    s_pts = list(traverse(s))
+    # Get all the items in t and in s, excluding the root and
+    # terminals.
+    t_pts = [p for p in list(traverse(t))[1:]
+             if p[0] not in grammar.terminals]
+    s_pts = [p for p in list(traverse(s))[1:]
+             if p[0] not in grammar.terminals]
 
     # Get their labels
-    t_lbls = [p[0] for p in t_pts]
-    s_lbls = [p[0] for p in s_pts]
+    t_lbls = set([p[0] for p in t_pts])
+    s_lbls = set([p[0] for p in s_pts])
 
-    # Get the labels which are in both parents, excluding the start
-    # symbol and terminals
-    x_lbls = [lbl for lbl in t_lbls if lbl in s_lbls
-              and lbl not in grammar.terminals
-              and lbl != grammar.start_rule[0]]
+    # Get the labels which are in both parents
+    x_lbls = (t_lbls & s_lbls)
 
-    # Choose a label uniformly among the labels.
-    x_lbl = random.choice(x_lbls)
+    # Choose a label *uniformly among the labels*
+    x_lbl = random.choice(list(x_lbls))
 
     # Find the points in t and in s which have that label
     tx_pts = [p for p in t_pts if p[0] == x_lbl]
     sx_pts = [p for p in s_pts if p[0] == x_lbl]
 
     # Choose the crossover points
-    tx_pt = random.choice([p for p in tx_pts if p[0] == x_lbl])
-    sx_pt = random.choice([p for p in sx_pts if p[0] == x_lbl])
+    tx_pt = random.choice(tx_pts)
+    sx_pt = random.choice(sx_pts)
 
     # Get the *subtree of the parent* (ie traverse up to path element
     # -2) of the crossover points, to allow insertion. We are safe in
@@ -138,13 +144,17 @@ def dt_crossover(t, s, grammar):
     assert len(sx_pt_pth) >= 2
     t_ins_pt = get_subtree(t, tx_pt_pth[:-2])
     s_ins_pt = get_subtree(s, sx_pt_pth[:-2])
+
+    # Get the index in the parent list at which to paste
+    t_idx = tx_pt_pth[-2]
+    s_idx = sx_pt_pth[-2]
     
-    # Perform the crossover: it's just a swap
-    tx_st = tx_pt[1]
-    sx_st = sx_pt[1]
-    t_idx = path(tx_pt)[-2]
-    s_idx = path(sx_pt)[-2]
-    t_ins_pt[t_idx], s_ins_pt[s_idx] = sx_pt[1], tx_pt[1]
+    # Get the subtrees to be pasted
+    tx_subtree = tx_pt[1]
+    sx_subtree = sx_pt[1]
+
+    # Perform the crossover
+    t_ins_pt[t_idx], s_ins_pt[s_idx] = sx_subtree, tx_subtree
 
 def main():
     from ponyge import Grammar
