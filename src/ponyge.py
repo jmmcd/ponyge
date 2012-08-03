@@ -206,7 +206,11 @@ class DTIndividual(Individual):
         self.fitness = fitness.default_fitness(FITNESS_FUNCTION.maximise)
         self.phenotype = None
         self.compiled_phenotype = None
-        self.used_codons = 0
+        # This is a bit of a hack: the number of nodes in the dt
+        # doesn't really correspond to the number of codons that would
+        # be used. But it's useful when printing stats to use this
+        # variable.
+        self.used_codons = len(list(dt.traverse(self.genome)))
 
     def generate(self, grammar):
         self.phenotype = dt.derived_str(self.genome, grammar)
