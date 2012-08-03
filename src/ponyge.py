@@ -255,7 +255,10 @@ def int_flip_mutation(individual):
 def dt_mutation(x, grammar):
     """Given an individual whose genome is a DT, return a new
     individual by mutation."""
-    return DTIndividual(dt.dt_mutation(copy.deepcopy(x.genome), grammar), grammar)
+    if random.random() < MUTATION_PROBABILITY:
+        return DTIndividual(dt.dt_mutation(copy.deepcopy(x.genome), grammar), grammar)
+    else:
+        return x
 
 # Two selection methods: tournament and truncation
 def tournament_selection(population, tournament_size=3):
