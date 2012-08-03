@@ -26,6 +26,7 @@ import copy
 # TODO allow crossover at start symbol, but not if both xover pts are root
 # TODO should crossover/mutation work on terminals?
 # TODO set the number of nodes in the tree as the number of codons for ponyge
+# TODO how should the experiments go -- vanilla ponyge v derivation tree, or should they start from the same place (ie use same initialisation)
 # TODO tests
 
 def path(item):
@@ -45,17 +46,13 @@ def get_subtree(t, path):
         t = t[item]
     return t
     
-def is_terminal(s):
-    """Is a string a terminal?"""
-    return not (s.startswith("<") and s.endswith(">"))
-
 def depth(item):
     """The depth of any node is the length of its path, minus 1."""
     return len(path(item)) - 1
 
-def derived_str(dt):
+def derived_str(dt, grammar):
     """Get the derived string."""
-    return "".join([s[0] for s in traverse(dt) if is_terminal(s[0])])
+    return "".join([s[0] for s in traverse(dt) if s[0] in grammar.terminals])
 
 def traverse(t, path=None):
     """Depth-first traversal of the tree t, yielding at each step the
@@ -75,7 +72,7 @@ def random_dt(grammar, s=None):
     symbol and a grammar. Please be amazed at how easy it is to do a
     derivation when we do away with the integer genome."""
     if s is None: s=grammar.start_rule[0]
-    if is_terminal(s): return s
+    if s in grammar.terminals: return s
     prod = random.choice(grammar.rules[s])
     return [s] + [random_dt(grammar, s[0]) for s in prod]
 
@@ -148,7 +145,7 @@ def main():
     
     dt = random_dt(grammar)
     print "dt", dt
-    print "dt derivation", derived_str(dt)
+    print "dt derivation", derived_str(dt, grammar)
 
     print "subtree (1,)", get_subtree(dt, (1,))
     print "node (1,)", get_node(dt, (1,))
@@ -157,14 +154,13 @@ def main():
 
     ds = random_dt(grammar)
     print "ds", ds
-    print "ds derivation", derived_str(ds)
-
+    print "ds derivation", derived_str(ds, grammar)
     
     dt_crossover(dt, ds, grammar)
-    print derived_str(dt)
+    print derived_str(dt, grammar)
 
     dt_mutation(dt, grammar)
-    print derived_str(dt)
+    print derived_str(dt, grammar)
 
     print "++++++++++++++++++"
     for item in traverse(dt):

@@ -209,7 +209,7 @@ class DTIndividual(Individual):
         self.used_codons = 0
 
     def generate(self, grammar):
-        self.phenotype = dt.derived_str(self.genome)
+        self.phenotype = dt.derived_str(self.genome, grammar)
 
 def initialise_population(size, grammar=None):
     """Create a population of Individuals of the given size. If
