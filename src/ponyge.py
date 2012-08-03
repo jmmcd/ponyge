@@ -185,8 +185,13 @@ class Individual(object):
             return other.fitness < self.fitness
 
     def __str__(self):
-        return ("Individual: " +
-                str(self.phenotype) + "; " + str(self.fitness))
+        train_fit = str(self.fitness)
+        if hasattr(FITNESS_FUNCTION, "test"):
+            test_fit = str(FITNESS_FUNCTION.test(self.phenotype))
+        else:
+            test_fit = train_fit
+        return ("Individual: " + str(self.phenotype) + "; " +
+                train_fit + "; " + test_fit)
 
     def generate(self, grammar):
         self.phenotype, self.used_codons = grammar.generate(self.genome)
