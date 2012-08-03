@@ -18,7 +18,8 @@ import copy
 # integers. The tree itself is accessed with the empty tuple. The root
 # node of a tree is accessed as (0,). The first subtree of the root is
 # (1,), and (2,) is the second subtree of the root. Getting (2, 0)
-# gets the root of that subtree.
+# gets the root of that subtree. Given a node's path we get its
+# *parent's subtree's path* by lopping off the last *two* elements.
 
 # TODO avoid crossing-over identical subtrees
 # TODO avoid mutating-in identical subtree
@@ -72,8 +73,8 @@ def random_dt(grammar, s=None):
     """Recursively create a random derivation tree given a start
     symbol and a grammar. Please be amazed at how easy it is to do a
     derivation when we do away with the integer genome."""
-    if s is None: s=grammar.start_rule[0]
     if s in grammar.terminals: return s
+    if s is None: s=grammar.start_rule[0]
     prod = random.choice(grammar.rules[s])
     return [s] + [random_dt(grammar, s[0]) for s in prod]
 
@@ -89,8 +90,9 @@ def dt_mutation(t, grammar):
     # Choose a point uniformly among the points.
     m_pt = random.choice(t_pts)    
 
-    # Get the *grandparents* (ie traverse up to path element -2) of
-    # the mutation point, to allow insertion. See comment in dt_crossover().
+    # Get the *subtree of the parent* (ie traverse up to path element
+    # -2) of the mutation point, to allow insertion. See comment in
+    # dt_crossover().
     t_ins_pt = get_subtree(t, path(m_pt)[:-2])
     
     # Perform the mutation: it's just a new random_dt()
@@ -124,14 +126,18 @@ def dt_crossover(t, s, grammar):
     tx_pt = random.choice([p for p in tx_pts if p[0] == x_lbl])
     sx_pt = random.choice([p for p in sx_pts if p[0] == x_lbl])
 
-    # Get the *grandparents* (ie traverse up to path element -2) of
-    # the crossover points, to allow insertion. This is
-    # counter-intuitive: you would expect to get the *parent*
-    # here. Note that a node's parent is the first element of the same
-    # sublist. The grandparent is the containing list, and that's what
-    # we need to insert into.
-    t_ins_pt = get_subtree(t, path(tx_pt)[:-2])
-    s_ins_pt = get_subtree(s, path(sx_pt)[:-2])
+    # Get the *subtree of the parent* (ie traverse up to path element
+    # -2) of the crossover points, to allow insertion. We are safe in
+    # doing this because there are only two types of *nodes* which
+    # have less than 2 elements in their path: the root, and any
+    # terminals which are children of the root. We won't ever be
+    # crossing-over at those points.
+    tx_pt_pth = path(tx_pt)
+    sx_pt_pth = path(sx_pt)
+    assert len(tx_pt_pth) >= 2
+    assert len(sx_pt_pth) >= 2
+    t_ins_pt = get_subtree(t, tx_pt_pth[:-2])
+    s_ins_pt = get_subtree(s, sx_pt_pth[:-2])
     
     # Perform the crossover: it's just a swap
     tx_st = tx_pt[1]
