@@ -1,0 +1,7 @@
+<code> ::= lambda x: <expr>
+<expr> ::= <bop>(<expr>, <expr>) | <uop>(<expr>) | <var> | <const>
+<bop> ::= add | subtract | multiply | divide
+<uop> ::= square | sin | cos
+<var> ::= x[0]
+<const> ::= 0.1 | 0.2 | 0.3 | 0.4 | 0.5
+<i> ::= 0

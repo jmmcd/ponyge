@@ -399,7 +399,7 @@ GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/boolean_hof.bnf", fitness.BooleanProb
 #GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/boolean.bnf", fitness.BooleanProblem(5, lambda x: (x[0] ^ x[1] ^ x[2] ^ x[3] ^ x[4]))
 #GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/letter.bnf", StringMatch("golden")
 #GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/arithmetic.pybnf", fitness.MaxFitness()
-
+GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/symbolic_regression.bnf", fitness.benchmarks()["vladislavleva_12"]
 
 def mane():
     """Run program"""
