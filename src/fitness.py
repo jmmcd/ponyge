@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import sys
 import random
 import operator
 from itertools import product
@@ -55,6 +56,7 @@ class RandomFitness:
 class SizeFitness:
     """Useful for investigating control of tree size. Return the
     difference from a target size."""
+    maximise = False
     def __init__(self, target_size=20):
         self.target_size = target_size
 
@@ -102,3 +104,40 @@ class BooleanProblem:
         output = fn(self.x)
         non_matches = output ^ self.target_cases
         return sum(non_matches) # Fitness is number of errors
+
+
+if __name__ == "__main__":
+    if len(sys.argv) == 1:
+        print("Usage: fitness.py <keyword>.")
+        sys.exit()
+
+    elif sys.argv[1] == "test_boolean":
+        fn1 = "lambda x: ~(x[0] ^ x[1] ^ x[2] ^ x[3] ^ x[4])" # even-5 parity
+        fn2 = "lambda x: True" # matches e5p for 16 cases out of 32
+        fn3 = "lambda x: x[0] ^ x[1] ^ x[2] ^ x[3] ^ x[4]" # never matches e5p
+
+        b = BooleanProblem(5, eval(fn1)) # target is e5p itself
+        print(b(fn1)) # fitness = 0
+        print(b(fn2)) # fitness = 16
+        print(b(fn3)) # fitness = 32
+
+        # Can also pass in a list of target values, ie semantics phenotype
+        b = BooleanProblem(2, [False, False, False, False])
+        print(b(fn2))
+
+    elif sys.argv[1] == "test_random":
+        fn1 = "dummy"
+        r = RandomFitness()
+        print(r(fn1))
+
+    elif sys.argv[1] == "test_size":
+        fn1 = "0123456789"
+        fn2 = "01234567890123456789"
+        s = SizeFitness(20)
+        print(s(fn1))
+        print(s(fn2))
+
+    elif sys.argv[1] == "test_max":
+        fn1 = "((0.5 + 0.5) + (0.5 + 0.5)) * ((0.5 + 0.5) + (0.5 + 0.5))"
+        m = MaxFitness()
+        print(m(fn1))
