@@ -3,9 +3,9 @@
 import random
 import copy
 
-# Derivation trees for PonyGE. The original PonyGE implemented GE
-# proper, that is integer-array genomes for mutation and crossover,
-# and derivation from the genomes. The aim here is to do away with the
+# Derivation trees for PonyGE. Vanilla PonyGE implements GE proper,
+# that is integer-array genomes for mutation and crossover, and
+# derivation from the genomes. The aim here is to do away with the
 # integer genome and just use derivation trees as genomes. We can
 # randomly-generate DTs, and cross them over and mutate them.
 
@@ -21,13 +21,18 @@ import copy
 # gets the root of that subtree. Given a node's path we get its
 # *parent's subtree's path* by lopping off the last *two* elements.
 
+# TODO tests
+
+# The following NOT needed for current experimental plans since
+# vanilla PonyGE doesn't have the corresponding feature:
 # TODO avoid crossing-over identical subtrees
 # TODO avoid mutating-in identical subtree
 # TODO implement a max-depth (we have the depth value of every node)
-# TODO should crossover/mutation work on terminals?
-# TODO set the number of nodes in the tree as the number of codons for ponyge
-# TODO how should the experiments go -- vanilla ponyge v derivation tree, or should they start from the same place (ie use same initialisation)
-# TODO tests
+# TODO instead of vanilla ponyge v dt, could make the two start from
+# the same place (ie use same initialisation). Rationale: that would
+# help us understand which aspects were affecting performance
+# (initialisation, crossover, mutation). But our hypothesis/experiment
+# is about which overall representation is better.
 
 def path(item):
     return item[2]
