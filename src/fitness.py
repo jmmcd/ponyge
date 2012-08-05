@@ -72,7 +72,6 @@ class MaxFitness():
     def __call__(self, candidate):
         return eval_or_exec(candidate)
 
-
 class BooleanProblem:
     """Boolean problem of size n. Pass target function in.
     Minimises. Objects of this type can be called."""
@@ -106,6 +105,23 @@ class BooleanProblem:
         non_matches = output ^ self.target_cases
         return sum(non_matches) # Fitness is number of errors
 
+class BooleanProblemGeneral:
+    """A compound problem. It consists of a single Boolean problem, at
+    several sizes. Some sizes are used for training, some for
+    testing. Training fitness is the sum of fitness on the training
+    sub-problems. Testing fitness is the sum of fitness on the testing
+    sub-problems."""
+    def __init__(self, train_ns, test_ns, target):
+        self.maximise = False
+        self.train_problems = [
+            BooleanProblem(n, target) for n in train_ns]
+        self.test_problems = [
+            BooleanProblem(n, target) for n in test_ns]
+    def __call__(self, s):
+        return sum([p(s) for p in self.train_problems])
+    def test(self, s):
+        return sum([p(s) for p in self.test_problems])
+    
 class SymbolicRegressionFitnessFunction:
     """Fitness function for symbolic regression problems. Yes, it's a
     Verb in the Kingdom of Nouns

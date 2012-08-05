@@ -1,5 +1,6 @@
 <code> ::= lambda x: <element> 
-<ufunc> ::= logical_and | logical_or | logical_xor
+<ufunc> ::= logical_and | logical_or
+# logical_xor makes it too easy
 <list> ::= x[1:] | x 
-<element> ::= x[0] | <ufunc>.reduce(<list>) | <ufunc>(<element>,<element>)
+<element> ::= x[0] | logical_not(<element>) | <ufunc>.reduce(<list>) | <ufunc>(<element>,<element>)
 
