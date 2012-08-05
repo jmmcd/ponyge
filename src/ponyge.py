@@ -211,13 +211,14 @@ class DTIndividual(Individual):
         self.fitness = fitness.default_fitness(FITNESS_FUNCTION.maximise)
         self.phenotype = None
         self.compiled_phenotype = None
+        self.used_codons = 0
+
+    def generate(self, grammar):
         # This is a bit of a hack: the number of nodes in the dt
         # doesn't really correspond to the number of codons that would
         # be used. But it's useful when printing stats to use this
         # variable.
         self.used_codons = len(list(dt.traverse(self.genome)))
-
-    def generate(self, grammar):
         self.phenotype = dt.derived_str(self.genome, grammar)
 
 def initialise_population(size, grammar=None):
@@ -390,16 +391,16 @@ VERBOSE = False
 DERIVATION_TREE_GENOME = False
 CODON_SIZE = 127
 ELITE_SIZE = 1
-POPULATION_SIZE = 100
-GENERATION_SIZE = 100
-GENERATIONS = 30
+POPULATION_SIZE = 200
+GENERATION_SIZE = 200
+GENERATIONS = 40
 MUTATION_PROBABILITY = 0.01
 CROSSOVER_PROBABILITY = 0.7
-GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/boolean_hof.bnf", fitness.BooleanProblem(5, lambda x: (x[0] ^ x[1] ^ x[2] ^ x[3] ^ x[4]))
-#GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/boolean.bnf", fitness.BooleanProblem(5, lambda x: (x[0] ^ x[1] ^ x[2] ^ x[3] ^ x[4]))
+#GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/boolean_hof.bnf", fitness.BooleanProblem(5, lambda x: ~(x[0] ^ x[1] ^ x[2] ^ x[3] ^ x[4]))
+GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/boolean.bnf", fitness.BooleanProblem(5, lambda x: ~(x[0] ^ x[1] ^ x[2] ^ x[3] ^ x[4]))
 #GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/letter.bnf", StringMatch("golden")
 #GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/arithmetic.pybnf", fitness.MaxFitness()
-GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/symbolic_regression.bnf", fitness.benchmarks()["vladislavleva_12"]
+#GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/symbolic_regression.bnf", fitness.benchmarks()["vladislavleva_12"]
 
 def mane():
     """Run program"""
