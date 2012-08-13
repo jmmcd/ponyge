@@ -32,7 +32,7 @@ class Grammar(object):
         # <.+?> Non greedy match of anything between brackets
         non_terminal_pattern = "(<.+?>)"
         rule_separator = "::="
-        production_separator = "|"
+        production_separator = r"[^\\]\|" # allow escaped "|"
 
         # Read the grammar file
         for line in open(file_name, 'r'):
@@ -48,15 +48,9 @@ class Grammar(object):
                         self.start_rule = (lhs, self.NT)
                     # Find terminals
                     tmp_productions = []
-                    productions = productions.split(production_separator)
-                    # Check for escaped symbol "\|"
-                    for i in range(len(productions) - 1):
-                        if productions[i].endswith("\\"):
-                            repair = (productions[i][:-1] +
-                                      production_separator + productions[i+1])
-                            productions[i:i+2] = [repair]
+                    productions = re.split(production_separator, productions)
                     for production in productions:
-                        production = production.strip()
+                        production = production.strip().replace("\\", "")
                         tmp_production = []
                         if not re.search(non_terminal_pattern, production):
                             self.terminals.add(production)
