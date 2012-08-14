@@ -43,6 +43,23 @@ generations:
 $ ./ponyge.py -g 10
 
 
+
+Writing grammars
+----------------
+
+Grammars are written in Backus-Naur form, aka BNF. See the examples in
+src/grammars. Each rule is composed of a left-hand side (a single
+non-terminal), followed by the "goes-to" symbol ::=, followed by a
+list of productions separated by the "or" symbol |. Non-terminals are
+enclosed by angle brackets <>. For example:
+
+<a> ::= <b>c | d
+
+You can use an "or" symbol or angle bracket in a production. Escape it
+using a backslash: \|, \<, \>. You can use the "goes-to" symbol in a
+production without escaping it.
+
+
 Example Problems
 ----------------
 

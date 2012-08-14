@@ -45,7 +45,7 @@ class Grammar(object):
             if not line.startswith("#") and line.strip() != "":
                 # Split rules. Everything must be on one line
                 if line.find(rule_separator):
-                    lhs, productions = line.split(rule_separator)
+                    lhs, productions = line.split(rule_separator, 1) # 1 split
                     lhs = lhs.strip()
                     if not re.search(non_terminal_pattern, lhs):
                         raise ValueError("lhs is not a NT:", lhs)
