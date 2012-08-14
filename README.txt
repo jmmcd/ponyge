@@ -6,7 +6,7 @@ an advertisement and a starting-point for those new to GE, a reference
 for implementors and researchers, a rapid-prototyping medium for our
 own experiments, and a Python workout. And a pony.
 
-PonyGE is copyright (C) 2009-2011 Erik Hemberg
+PonyGE is copyright (C) 2009-2012 Erik Hemberg
 <erik.hemberg@gmail.com> and James McDermott
 <jamesmichaelmcdermott@gmail.com>.
 
@@ -41,6 +41,22 @@ the command-line. For example, running the default problem for 10
 generations:
 
 $ ./ponyge.py -g 10
+
+
+Writing grammars
+----------------
+
+Grammars are written in Backus-Naur form, aka BNF. See the examples in
+src/grammars. Each rule is composed of a left-hand side (a single
+non-terminal), followed by the "goes-to" symbol ::=, followed by a
+list of productions separated by the "or" symbol |. Non-terminals are
+enclosed by angle brackets <>. For example:
+
+<a> ::= <b>c | d
+
+You can use an "or" symbol or angle bracket in a production. Escape it
+using a backslash: \|, \<, \>. You can use the "goes-to" symbol in a
+production without escaping it.
 
 
 Example Problems
@@ -144,7 +160,6 @@ number of generations; 0 is the elite size (zero here, because in this
 coevolutionary setup a player's fitness depends on its opponents, so
 players shouldn't keep their fitness from previous generations); and
 0.2 is the mutation rate.
-
 
 
 Reference
