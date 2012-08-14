@@ -29,10 +29,16 @@ class Grammar(object):
 
     def read_bnf_file(self, file_name):
         """Read a grammar file in BNF format"""
-        # <.+?> Non greedy match of anything between brackets
-        non_terminal_pattern = "(<.+?>)"
         rule_separator = "::="
-        production_separator = r"[^\\]\|" # allow escaped "|"
+        # Don't allow space in NTs, and use lookbehind to match "<"
+        # and ">" only if not preceded by backslash. Group the whole
+        # thing with capturing parentheses so that split() will return
+        # all NTs and Ts. TODO does this handle quoted NT symbols?
+        non_terminal_pattern = r"((?<!\\)<\S+?(?<!\\)>)"
+        # Use lookbehind again to match "|" only if not preceded by
+        # backslash. Don't group, so split() will return only the
+        # productions, not the separators.
+        production_separator = r"(?<!\\)\|"
 
         # Read the grammar file
         for line in open(file_name, 'r'):
@@ -46,27 +52,21 @@ class Grammar(object):
                     self.non_terminals.add(lhs)
                     if self.start_rule == None:
                         self.start_rule = (lhs, self.NT)
-                    # Find terminals
+                    # Find terminals and non-terminals
                     tmp_productions = []
-                    productions = re.split(production_separator, productions)
-                    for production in productions:
-                        production = production.strip().replace("\\", "")
+                    for production in re.split(production_separator, productions):
+                        production = production.strip().replace(r"\|", "|")
                         tmp_production = []
-                        if not re.search(non_terminal_pattern, production):
-                            self.terminals.add(production)
-                            tmp_production.append((production, self.T))
-                        else:
-                            # Match non terminal or terminal pattern
-                            # TODO does this handle quoted NT symbols?
-                            for value in re.findall("<.+?>|[^<>]*", production):
-                                if value != '':
-                                    if not re.search(non_terminal_pattern,
-                                                     value):
-                                        symbol = (value, self.T)
-                                        self.terminals.add(value)
-                                    else:
-                                        symbol = (value, self.NT)
-                                    tmp_production.append(symbol)
+                        for symbol in re.split(non_terminal_pattern, production):
+                            symbol = symbol.replace(r"\<", "<").replace(r"\>", ">")
+                            if len(symbol) == 0:
+                                continue
+                            elif re.match(non_terminal_pattern, symbol):
+                                tmp_production.append((symbol, self.NT))
+                            else:
+                                self.terminals.add(symbol)
+                                tmp_production.append((symbol, self.T))
+
                         tmp_productions.append(tmp_production)
                     # Create a rule
                     if not lhs in self.rules:
