@@ -51,7 +51,14 @@ def graph(basedir):
                 
 def run(basedir):
     proc_idx = 0
-    for problem in ["bool"]: # NB unfortunately have to edit ponyge to run a new problem
+    for problem in ["sr"]:
+        if problem == "sr":
+            fitness_arg = """ -f 'fitness.benchmarks()["pagie_2d"]' """
+            grammar_arg = """ -b 'grammars/symbolic_regression_2d.bnf' """
+        else:
+            fitness_arg = """ -f 'fitness.BooleanProblem(5, lambda x: ~(x[0] ^ x[1] ^ x[2] ^ x[3] ^ x[4]))' """
+            grammar_arg = """ -b 'grammars/boolean.bnf' """
+            
         for grammar in ["bnf"]: # later do ebnf also
             for cond in ["int", "dt"]:
                 for rep in range(reps):
@@ -62,13 +69,13 @@ def run(basedir):
                     filename = os.path.join(
                         dir, grammar + "_" + cond + "_" + str(rep) + ".dat")
                     cmd = ("python ponyge.py " + ("-d" if cond == "dt" else "")
-                           + " > " + filename)
+                           + fitness_arg + grammar_arg + " > " + filename)
                     # simple hack to use multiple cores
                     if (proc_idx % cores) != (cores - 1):
                         cmd += " &" 
                     proc_idx += 1
                     print(cmd)
-                    os.system(cmd)
+                    # os.system(cmd)
 
 if __name__ == "__main__":
     if len(sys.argv) == 3:
