@@ -60,16 +60,17 @@ def run(basedir):
             grammar_arg = """ -b 'grammars/boolean.bnf' """
             
         for grammar in ["bnf"]: # later do ebnf also
-            for cond in ["int", "dt"]:
+            for cond in ["int"]: # later do dt also
                 for rep in range(reps):
                     dir = os.path.join(
                         basedir,
-                        problem,
-                        "bnf_ebnf_int_dt")
+                        problem)
                     filename = os.path.join(
                         dir, grammar + "_" + cond + "_" + str(rep) + ".dat")
-                    cmd = ("python ponyge.py " + ("-d" if cond == "dt" else "")
-                           + fitness_arg + grammar_arg + " > " + filename)
+                    cmd = ("python ponyge.py -p 1000 "
+                           + ("-d" if cond == "dt" else "")
+                           + fitness_arg + grammar_arg
+                           + " > " + filename)
                     # simple hack to use multiple cores
                     if (proc_idx % cores) != (cores - 1):
                         cmd += " &" 
