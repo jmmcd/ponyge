@@ -223,6 +223,11 @@ def initialise_population(size, grammar=None):
     else:
         return [Individual(None) for _ in range(size)]
 
+def print_header():
+    print("# generation evaluations best_fitness best_used_codons " +
+          "mean_fitness stddev_fitness mean_used_codons stddev_used_codons " +
+          "number_invalids best_phenotype")
+
 def print_stats(generation, individuals):
     """Print the statistics for the generation and individuals"""
     def ave(values):
@@ -233,6 +238,7 @@ def print_stats(generation, individuals):
         return math.sqrt(float(sum((value-ave)**2 for value in values))/len(values))
 
     valid_inds = [i for i in individuals if i.phenotype is not None]
+    ninvalids = len(individuals) - len(valid_inds)
     if len(valid_inds) == 0:
         fitness_vals = [0]
         used_codon_vals = [0]
@@ -243,9 +249,12 @@ def print_stats(generation, individuals):
     std_fit = std(fitness_vals, ave_fit)
     ave_used_codons = ave(used_codon_vals)
     std_used_codons = std(used_codon_vals, ave_used_codons)
-    print("Gen:%d evals:%d ave:%.2f+-%.3f aveUsedC:%.2f+-%.3f %s" % (
-            generation, (GENERATION_SIZE*generation), ave_fit, std_fit,
-            ave_used_codons, std_used_codons, individuals[0]))
+    print("{0} {1} {2} {3} {4:.2f} {5:.2f} {6:.2f} {7:.2f} {8} : {9}"
+          .format(generation, GENERATION_SIZE * generation,
+                  individuals[0].fitness, individuals[0].used_codons,
+                  ave_fit, std_fit, ave_used_codons, std_used_codons,
+                  ninvalids, 
+                  individuals[0].phenotype))
 
 def int_flip_mutation(individual):
     """Mutate the individual by randomly chosing a new int with
@@ -403,6 +412,7 @@ def mane():
     bnf_grammar = Grammar(GRAMMAR_FILE)
     if VERBOSE:
         print(bnf_grammar)
+    print_header()
     # Genetic operators: initialise, crossover, mutation
     if DERIVATION_TREE_GENOME:
         crossover = lambda x, y: dt_crossover(x, y, bnf_grammar)
