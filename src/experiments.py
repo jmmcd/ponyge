@@ -13,13 +13,15 @@ def process_dir(dirname, basefilename, reps):
     for i in range(reps):
         filename = os.path.join(dirname, basefilename + str(i) + ".dat")
         data = open(filename).read()
-        best_i = [float(line.split("; ")[-1])
-                  for line in data.split("\n")
-                  if line.startswith("Gen")]
+        best_i, codons_i = [], []
+        for line in data.split("\n"):
+            if (not line.startswith("#")) and (not line.startswith("Best")):
+                numbers, phenotype = line.split(":", maxsplit=1)
+                (gen, evals, bestfit, bestcodons, meanfit, stdfit,
+                 meancodons, stdcodons, ninvalids) = map(float, numbers.split())
+                best_i.append(bestfit)
+                codons_i.append(bestcodons)
         best.append(best_i)
-        codons_i = [float(line.split("aveUsedC:")[-1].split("+")[0])
-                    for line in data.split("\n")
-                    if line.startswith("Gen")]
         codons.append(codons_i)
     make_figure(best, dirname, basefilename, "best")
     make_figure(codons, dirname, basefilename, "codons")
@@ -55,9 +57,12 @@ def run(basedir):
         if problem == "sr":
             fitness_arg = """ -f 'fitness.benchmarks()["pagie_2d"]' """
             grammar_arg = """ -b 'grammars/symbolic_regression_2d.bnf' """
-        else:
+        elif problem == "bool":
             fitness_arg = """ -f 'fitness.BooleanProblem(5, lambda x: ~(x[0] ^ x[1] ^ x[2] ^ x[3] ^ x[4]))' """
             grammar_arg = """ -b 'grammars/boolean.bnf' """
+        else:
+            print("Unknown problem " + problem)
+            sys.exit(1)
             
         for grammar in ["bnf"]: # later do ebnf also
             for cond in ["int"]: # later do dt also
