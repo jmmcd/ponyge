@@ -15,14 +15,22 @@ def process_dir(dirname, basefilename, reps):
         data = open(filename).read()
         best_i, codons_i = [], []
         for line in data.split("\n"):
-            if (not line.startswith("#")) and (not line.startswith("Best")):
-                numbers, phenotype = line.split(":", maxsplit=1)
+            if (len(line) and
+                (not line.startswith("#")) and
+                (not line.startswith("Best")) and
+                (not line.startswith("GENERATIONS")) and
+                (not line.startswith("Failure")) and
+                (not line.startswith("Success"))):
+                # print(line)
+                numbers, phenotype = line.split(":", 1)
                 (gen, evals, bestfit, bestcodons, meanfit, stdfit,
                  meancodons, stdcodons, ninvalids) = map(float, numbers.split())
                 best_i.append(bestfit)
                 codons_i.append(bestcodons)
         best.append(best_i)
         codons.append(codons_i)
+    assert(len(set([len(x) for x in best])) == 1)
+    assert(len(set([len(x) for x in best])) == 1)
     make_figure(best, dirname, basefilename, "best")
     make_figure(codons, dirname, basefilename, "codons")
 
@@ -36,8 +44,12 @@ def make_figure(d, dirname, basefilename, key):
     ax.errorbar(range(len(d_mean)), d_mean, yerr=d_std, fmt='-o')
     ax.grid(True)
     ax.set_xlabel("Generation")
-    ax.set_ylabel("Fitness")
+    if key == "best":
+        ax.set_ylabel("Fitness")
+    elif key == "codons":
+        ax.set_ylabel("Codons")
     filename = os.path.join(dirname, basefilename + key + ".pdf")
+    print("saving to " + filename)
     fig.savefig(filename)
     close()
 
@@ -77,15 +89,17 @@ def run(basedir):
                            + fitness_arg + grammar_arg
                            + " > " + filename)
                     # simple hack to use multiple cores
-                    if (proc_idx % cores) != (cores - 1):
+                    if (proc_idx % cores) != (cores - 1) and False:
                         cmd += " &" 
                     proc_idx += 1
                     print(cmd)
-                    # os.system(cmd)
+                    os.system(cmd)
 
 if __name__ == "__main__":
-    if len(sys.argv) == 3:
+    if len(sys.argv) >= 3:
         if sys.argv[1] == "run":
             run(sys.argv[2])
         elif sys.argv[1] == "graph":
             graph(sys.argv[2])
+        elif sys.argv[1] == "graph1":
+            process_dir(sys.argv[2], sys.argv[3], 30)

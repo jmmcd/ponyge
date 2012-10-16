@@ -183,7 +183,11 @@ class SymbolicRegressionFitnessFunction:
         """Allow objects of this type to be called as if they were
         functions. Return a fitness value."""
         # s is a string which evals to a fn.
-        fn = eval(s)
+        try:
+            fn = eval(s)
+        except MemoryError:
+            # can happen when the individual is too large to parse
+            return default_fitness(self.maximise)
         try:
             v = self.defn(self.values, fn(self.cases))
             return v
