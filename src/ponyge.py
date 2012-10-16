@@ -80,7 +80,7 @@ class Grammar(object):
         return "%s %s %s %s" % (self.terminals, self.non_terminals,
                                 self.rules, self.start_rule)
 
-    def generate(self, _input, max_wraps=2):
+    def generate(self, _input, max_wraps=1):
         """Map input via rules to output. Returns output and used_input"""
         used_input = 0
         wraps = 0
@@ -88,7 +88,7 @@ class Grammar(object):
         production_choices = []
 
         unexpanded_symbols = [self.start_rule]
-        while (wraps < max_wraps) and (len(unexpanded_symbols) > 0):
+        while (wraps <= max_wraps) and (len(unexpanded_symbols) > 0):
             # Wrap
             if used_input % len(_input) == 0 and \
                     used_input > 0 and \
@@ -226,7 +226,7 @@ def initialise_population(size, grammar=None):
 def print_header():
     print("# generation evaluations best_fitness best_used_codons " +
           "mean_fitness stddev_fitness mean_used_codons stddev_used_codons " +
-          "number_invalids best_phenotype")
+          "number_invalids mean_genome_length best_phenotype")
 
 def print_stats(generation, individuals):
     """Print the statistics for the generation and individuals"""
@@ -245,15 +245,18 @@ def print_stats(generation, individuals):
     else:
         fitness_vals = [i.fitness for i in valid_inds]
         used_codon_vals = [i.used_codons for i in valid_inds]
+    len_vals = [len(i.genome) for i in individuals]
     ave_fit = ave(fitness_vals)
     std_fit = std(fitness_vals, ave_fit)
     ave_used_codons = ave(used_codon_vals)
     std_used_codons = std(used_codon_vals, ave_used_codons)
-    print("{0} {1} {2} {3} {4:.2f} {5:.2f} {6:.2f} {7:.2f} {8} : {9}"
+    ave_len = ave(len_vals)
+    std_len = std(len_vals, ave_len)
+    print("{0} {1} {2} {3} {4:.2f} {5:.2f} {6:.2f} {7:.2f} {8:.2f} {9:.2f} {10} : {11}"
           .format(generation, GENERATION_SIZE * generation,
                   individuals[0].fitness, individuals[0].used_codons,
                   ave_fit, std_fit, ave_used_codons, std_used_codons,
-                  ninvalids, 
+                  ave_len, std_len, ninvalids, 
                   individuals[0].phenotype))
 
 def int_flip_mutation(individual):
