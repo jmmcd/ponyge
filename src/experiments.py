@@ -31,7 +31,7 @@ def process_dir(dirname, basefilename, reps):
         best.append(best_i)
         codons.append(codons_i)
     assert(len(set([len(x) for x in best])) == 1)
-    assert(len(set([len(x) for x in best])) == 1)
+    assert(len(set([len(x) for x in codons])) == 1)
     make_figure(best, dirname, basefilename, "best")
     make_figure(codons, dirname, basefilename, "codons")
 
