@@ -263,6 +263,9 @@ def int_flip_mutation(individual):
     """Mutate the individual by randomly chosing a new int with
     probability p_mut. Works per-codon, hence no need for
     "within_used" option."""
+    # in case the input individual is later re-used as a parent:
+    # we must not modify it here.
+    individual = copy.deepcopy(individual) 
     for i in range(len(individual.genome)):
         if random.random() < MUTATION_PROBABILITY:
             individual.genome[i] = random.randint(0, CODON_SIZE)

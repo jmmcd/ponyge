@@ -24,7 +24,8 @@ def process_dir(dirname, basefilename, reps):
                 # print(line)
                 numbers, phenotype = line.split(":", 1)
                 (gen, evals, bestfit, bestcodons, meanfit, stdfit,
-                 meancodons, stdcodons, ninvalids) = map(float, numbers.split())
+                 meancodons, stdcodons, meanlen, stdlen,
+                 ninvalids) = map(float, numbers.split())
                 best_i.append(bestfit)
                 codons_i.append(bestcodons)
         best.append(best_i)
@@ -46,8 +47,10 @@ def make_figure(d, dirname, basefilename, key):
     ax.set_xlabel("Generation")
     if key == "best":
         ax.set_ylabel("Fitness")
+        ax.set_ylim(0.0, 0.6)
     elif key == "codons":
         ax.set_ylabel("Codons")
+        ax.set_ylim(0.0, 100.0)
     filename = os.path.join(dirname, basefilename + key + ".pdf")
     print("saving to " + filename)
     fig.savefig(filename)
