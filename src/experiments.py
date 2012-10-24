@@ -106,3 +106,7 @@ if __name__ == "__main__":
             graph(sys.argv[2])
         elif sys.argv[1] == "graph1":
             process_dir(sys.argv[2], sys.argv[3], 30)
+        else:
+            print("Unknown command " + sys.argv[2])
+    else:
+        print("Usage: experiments.py run <basedir> | graph <basedir> | graph1 <basedir> <basename>")
