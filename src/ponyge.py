@@ -304,10 +304,12 @@ def onepoint_crossover(p_0, p_1, within_used=True):
     c_p_0, c_p_1 = p_0.genome, p_1.genome
     # Uniformly generate crossover points. If within_used==True,
     # points will be within the used section.
+    len_p_0, len_p_1 = len(c_p_0), len(c_p_1)
     if within_used:
-        max_p_0, max_p_1 = p_0.used_codons, p_1.used_codons
+        # -1 to get last index in array; min() in case of wraps: used > len
+        max_p_0, max_p_1 = min(p_0.used_codons, len_p_0 - 1), min(p_1.used_codons, len_p_1 - 1)
     else:
-        max_p_0, max_p_1 = len(c_p_0), len(c_p_1)
+        max_p_0, max_p_1 = len_p_0 - 1, len_p_1 - 1
     pt_p_0, pt_p_1 = random.randint(1, max_p_0), random.randint(1, max_p_1)
     # Make new chromosomes by crossover: these slices perform copies
     if random.random() < CROSSOVER_PROBABILITY:
