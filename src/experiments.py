@@ -32,8 +32,17 @@ def process_dir(dirname, basefilename, reps):
         codons.append(codons_i)
     assert(len(set([len(x) for x in best])) == 1)
     assert(len(set([len(x) for x in codons])) == 1)
+    return best, codons
+
+def make_plots(dirname, basefilename, reps):
+    best, codons = process_dir(dirname, basefilename, reps)
     make_figure(best, dirname, basefilename, "best")
     make_figure(codons, dirname, basefilename, "codons")
+    # print out final best fitnesses for possible t-test against
+    # results from a different directory.
+    best_fitnesses = [x[-1] for x in best]
+    print best_fitnesses
+    
 
 def make_figure(d, dirname, basefilename, key):
     d = np.array(d)
@@ -64,7 +73,7 @@ def graph(basedir):
                     basedir,
                     problem,
                     "bnf_ebnf_int_dt")
-                process_dir(dir, grammar + "_" + cond + "_", reps)
+                make_plots(dir, grammar + "_" + cond + "_", reps)
                 
 def run(basedir):
     proc_idx = 0
@@ -105,7 +114,7 @@ if __name__ == "__main__":
         elif sys.argv[1] == "graph":
             graph(sys.argv[2])
         elif sys.argv[1] == "graph1":
-            process_dir(sys.argv[2], sys.argv[3], 30)
+            make_plots(sys.argv[2], sys.argv[3], 30)
         else:
             print("Unknown command " + sys.argv[2])
     else:
