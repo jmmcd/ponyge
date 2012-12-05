@@ -84,3 +84,10 @@
   specific structures. Given an existing structure, the user decides
   that a specific new shape is needed, so goes to the inject menu to
   select from some predefined shapes.
+
+- Memoize the fitness evaluation and avoid running the same individual
+  twice. This should have small algorithmic effect.
+
+- Memoize each sub-expression in SR fitness, to avoid running the same
+  expression twice. Do this across an entire run. Should have no
+  algorithmic effect, only make it faster.
