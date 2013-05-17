@@ -1,0 +1,10 @@
+# Demonstrates how to use statements in PonyGE grammars. Use {: and :}
+# as special tokens indicating blocks. Define a variable
+# XXXeval_or_exec_outputXXX which will be your return value.
+
+<code> ::= <database>\n<ols>\n
+<database> ::= open /home/jonathan/Dropbox/data.xls
+
+<ols> ::= ols ret <vars> 
+<vars> ::= <var> | <vars> <var>
+<var> ::=  ret_lag_1 | ret_lag_2 | ret_week | ret_month | ret_lag_1_sq | ret_lag_2_sq | ret_week_sq | ret_month_sq

@@ -3,6 +3,7 @@
 import sys
 import random
 import operator
+import subprocess
 from itertools import product
 import numpy as np
 from numpy import add, subtract, multiply, divide, sin, cos, exp, log, power, square
@@ -38,6 +39,14 @@ def eval_or_exec(expr):
         retval = None
     return retval
 
+def run_cmd(cmd):
+    """executes a command line command"""
+    process = subprocess.Popen(cmd, shell=True,
+                               stdout=subprocess.PIPE,
+                               stdin=subprocess.PIPE)
+    result = process.communicate()
+    return result
+    
 def default_fitness(maximise):
     """Return default fitness given maximization of minimization"""
     if maximise:
@@ -72,6 +81,33 @@ class MaxFitness():
     def __call__(self, candidate):
         return eval_or_exec(candidate)
 
+class GretlFitness():
+    """GRETL is a GNU econometrics library, this outputs gretl scripts 
+    and then parses the output and significance to generate a fitness  value"""
+    maximise = True
+    def __call__(self, candidate):
+        candidate = candidate.replace('\\n', '\n')
+        outfile = open('gretl.inp','wb')
+        outfile.write(candidate)
+        outfile.close()
+        result = run_cmd("gretlcli -b gretl.inp 2> /dev/null")
+        fitness = self.parse_result(result)
+        return fitness
+
+    def parse_result(self, result):
+        print "evaluating"
+        fitness = 0
+        lines = result[0].split('\n')
+        for line in lines:
+            #            # coefficient   std. error   t-ratio   p-value
+            # if '*' in line:
+            #     print line
+            if 'R-squared' in line:
+                line = line.split(' ')
+                line = filter(lambda a: a != '', line)
+                fitness = line[1]
+        return fitness
+        
 class BooleanProblem:
     """Boolean problem of size n. Pass target function in.
     Minimises. Objects of this type can be called."""
