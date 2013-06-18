@@ -71,7 +71,8 @@ class GE(object):
         print(str(list(map(lambda x: x.fitness, self.individuals))))
 
         self.individuals, self.best_ever = ponyge.step(
-            self.individuals, self.grammar, self.replacement,
+            self.individuals, self.grammar, ponyge.onepoint_crossover,
+            ponyge.int_flip_mutation, self.replacement,
             self.selection, ponyge.FITNESS_FUNCTION, self.best_ever)
         ponyge.print_stats(self.generation, self.individuals)
         # write to stderr. this allows us to redirect entire run to stdout
