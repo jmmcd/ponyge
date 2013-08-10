@@ -435,6 +435,7 @@ def mane():
                             generational_replacement, tournament_selection,
                             FITNESS_FUNCTION)
     print("Best " + str(best_ever))
+    return best_ever
 
 if __name__ == "__main__":
     import getopt
