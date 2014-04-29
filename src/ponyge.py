@@ -16,7 +16,7 @@ class Grammar(object):
     NT = "NT" # Non Terminal
     T = "T" # Terminal
 
-    def __init__(self, file_name):
+    def __init__(self, file_name, nvars=None):
         if file_name.endswith("pybnf"):
             self.python_mode = True
         else:
@@ -25,9 +25,9 @@ class Grammar(object):
         self.non_terminals, self.terminals = set(), set()
         self.start_rule = None
 
-        self.read_bnf_file(file_name)
+        self.read_bnf_file(file_name, nvars)
 
-    def read_bnf_file(self, file_name):
+    def read_bnf_file(self, file_name, nvars=None):
         """Read a grammar file in BNF format"""
         rule_separator = "::="
         # Don't allow space in NTs, and use lookbehind to match "<"
@@ -52,6 +52,19 @@ class Grammar(object):
                     self.non_terminals.add(lhs)
                     if self.start_rule == None:
                         self.start_rule = (lhs, self.NT)
+                    if lhs == "<var>" and nvars is not None:
+                        # Respond to nvars if we have it. Ignore any
+                        # RHS in the file. Use x[0] | ... | x[n-1]
+                        tmp_productions = []
+                        for i in range(nvars):
+                            tmp_production = []
+                            tmp_production.append(("x[%d]"%i, self.T))
+                            tmp_productions.append(tmp_production)
+                        if not lhs in self.rules:
+                            self.rules[lhs] = tmp_productions
+                        else:
+                            raise ValueError("lhs should be unique", lhs)
+                        continue
                     # Find terminals and non-terminals
                     tmp_productions = []
                     for production in re.split(production_separator, productions):
@@ -417,7 +430,7 @@ GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/boolean.bnf", fitness.BooleanProblem(
 def mane():
     """Run program"""
     # Read grammar
-    bnf_grammar = Grammar(GRAMMAR_FILE)
+    bnf_grammar = Grammar(GRAMMAR_FILE, nvars=len(FITNESS_FUNCTION.x))
     if VERBOSE:
         print(bnf_grammar)
     print_header()
