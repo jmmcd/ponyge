@@ -81,3 +81,6 @@
   specific structures. Given an existing structure, the user decides
   that a specific new shape is needed, so goes to the inject menu to
   select from some predefined shapes.
+
+- Miguel suggests the mutation rate should be inversely proportional
+  to the effective genome length (it is currently just per-codon).
