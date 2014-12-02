@@ -78,7 +78,7 @@ class Grammar(object):
         return "%s %s %s %s" % (self.terminals, self.non_terminals,
                                 self.rules, self.start_rule)
 
-    def generate(self, _input, max_wraps=2):
+    def generate(self, _input):
         """Map input via rules to output. Returns output and used_input"""
         used_input = 0
         wraps = 0
@@ -86,7 +86,7 @@ class Grammar(object):
         production_choices = []
 
         unexpanded_symbols = [self.start_rule]
-        while (wraps < max_wraps) and (len(unexpanded_symbols) > 0):
+        while (wraps <= MAX_WRAPS) and (len(unexpanded_symbols) > 0):
             # Wrap
             if used_input % len(_input) == 0 and \
                     used_input > 0 and \
@@ -448,6 +448,7 @@ GENERATION_SIZE = 100
 GENERATIONS = 30
 MUTATION_PROBABILITY = 0.01
 CROSSOVER_PROBABILITY = 0.7
+MAX_WRAPS = 0
 #GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/hofBoolean.pybnf", EvenNParityFitness(3)
 GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/letter.bnf", StringMatch("golden")
 #GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/arithmetic.pybnf", MaxFitness()
@@ -474,7 +475,7 @@ if __name__ == "__main__":
         OPTS, ARGS = getopt.getopt(sys.argv[1:], "vp:g:e:m:x:b:f:",
                                    ["verbose", "population", "generations",
                                     "elite_size", "mutation", "crossover",
-                                    "bnf_grammar", "fitness_function"])
+                                    "bnf_grammar", "fitness_function", "max_wraps"])
     except getopt.GetoptError as err:
         print(str(err))
         # FIXME usage
@@ -497,6 +498,8 @@ if __name__ == "__main__":
             GRAMMAR_FILE = arg
         elif opt in ("-f", "--fitness_function"):
             FITNESS_FUNCTION = eval(arg)
+        elif opt in ("-w", "--max_wraps"):
+            MAX_WRAPS = int(arg)
         else:
             assert False, "unhandled option"
     mane()
