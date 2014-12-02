@@ -472,7 +472,7 @@ if __name__ == "__main__":
     import getopt
     try:
         # FIXME help option
-        OPTS, ARGS = getopt.getopt(sys.argv[1:], "vp:g:e:m:x:b:f:",
+        OPTS, ARGS = getopt.getopt(sys.argv[1:], "vp:g:e:m:x:b:f:w:",
                                    ["verbose", "population", "generations",
                                     "elite_size", "mutation", "crossover",
                                     "bnf_grammar", "fitness_function", "max_wraps"])
