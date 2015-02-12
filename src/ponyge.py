@@ -269,7 +269,7 @@ def print_stats(generation, individuals):
           .format(generation, GENERATION_SIZE * generation,
                   individuals[0].fitness, individuals[0].used_codons,
                   ave_fit, std_fit, ave_used_codons, std_used_codons,
-                  ave_len, std_len, ninvalids, 
+                  ave_len, std_len, ninvalids,
                   individuals[0].phenotype))
 
 def int_flip_mutation(individual):
@@ -278,7 +278,7 @@ def int_flip_mutation(individual):
     "within_used" option."""
     # in case the input individual is later re-used as a parent:
     # we must not modify it here.
-    individual = copy.deepcopy(individual) 
+    individual = copy.deepcopy(individual)
     for i in range(len(individual.genome)):
         if random.random() < MUTATION_PROBABILITY:
             individual.genome[i] = random.randint(0, CODON_SIZE)
@@ -421,16 +421,16 @@ GENERATIONS = 40
 MUTATION_PROBABILITY = 0.01
 CROSSOVER_PROBABILITY = 0.7
 #GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/boolean_hof.bnf", fitness.BooleanProblem(5, lambda x: ~(x[0] ^ x[1] ^ x[2] ^ x[3] ^ x[4]))
-GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/boolean.bnf", fitness.BooleanProblem(5, lambda x: ~(x[0] ^ x[1] ^ x[2] ^ x[3] ^ x[4]))
+#GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/boolean.bnf", fitness.BooleanProblem(5, lambda x: ~(x[0] ^ x[1] ^ x[2] ^ x[3] ^ x[4]))
 #GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/letter.bnf", StringMatch("golden")
 #GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/arithmetic.pybnf", fitness.MaxFitness()
-#GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/symbolic_regression.bnf", fitness.benchmarks()["vladislavleva_12"]
+GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/symbolic_regression_2d.bnf", fitness.SymbolicRegressionFitnessFunction("data/fagan_train.dat", "data/fagan_test.dat")
 #GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/boolean_hof.bnf", fitness.BooleanProblemGeneral([2, 3], [5], lambda x: reduce((lambda u, v: u ^ v), x))
 
 def mane():
     """Run program"""
     # Read grammar
-    bnf_grammar = Grammar(GRAMMAR_FILE, nvars=len(FITNESS_FUNCTION.x))
+    bnf_grammar = Grammar(GRAMMAR_FILE, nvars=len(FITNESS_FUNCTION.train_X))
     if VERBOSE:
         print(bnf_grammar)
     print_header()
