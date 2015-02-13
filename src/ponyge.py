@@ -16,7 +16,7 @@ class Grammar(object):
     NT = "NT" # Non Terminal
     T = "T" # Terminal
 
-    def __init__(self, file_name, nvars=None):
+    def __init__(self, file_name, **kwargs):
         if file_name.endswith("pybnf"):
             self.python_mode = True
         else:
@@ -25,9 +25,9 @@ class Grammar(object):
         self.non_terminals, self.terminals = set(), set()
         self.start_rule = None
 
-        self.read_bnf_file(file_name, nvars)
+        self.read_bnf_file(file_name, **kwargs)
 
-    def read_bnf_file(self, file_name, nvars=None):
+    def read_bnf_file(self, file_name, **kwargs):
         """Read a grammar file in BNF format"""
         rule_separator = "::="
         # Don't allow space in NTs, and use lookbehind to match "<"
@@ -52,35 +52,39 @@ class Grammar(object):
                     self.non_terminals.add(lhs)
                     if self.start_rule == None:
                         self.start_rule = (lhs, self.NT)
-                    if lhs == "<var>" and nvars is not None:
-                        # Respond to nvars if we have it. Ignore any
-                        # RHS in the file. Use x[0] | ... | x[n-1]
-                        tmp_productions = []
-                        for i in range(nvars):
-                            tmp_production = []
-                            tmp_production.append(("x[%d]"%i, self.T))
-                            tmp_productions.append(tmp_production)
-                        if not lhs in self.rules:
-                            self.rules[lhs] = tmp_productions
-                        else:
-                            raise ValueError("lhs should be unique", lhs)
-                        continue
+
                     # Find terminals and non-terminals
                     tmp_productions = []
-                    for production in re.split(production_separator, productions):
-                        production = production.strip().replace(r"\|", "|")
-                        tmp_production = []
-                        for symbol in re.split(non_terminal_pattern, production):
-                            symbol = symbol.replace(r"\<", "<").replace(r"\>", ">")
-                            if len(symbol) == 0:
-                                continue
-                            elif re.match(non_terminal_pattern, symbol):
-                                tmp_production.append((symbol, self.NT))
-                            else:
-                                self.terminals.add(symbol)
-                                tmp_production.append((symbol, self.T))
 
-                        tmp_productions.append(tmp_production)
+                    if productions.strip().startswith("GE_RANGE:"):
+                        # Special case: for GE_RANGE:nvars, substitute
+                        # 0 | 1 | ... | 9 (assuming nvars=10)
+                        varname = productions.strip().split(":")[1]
+                        assert varname in kwargs
+                        n = kwargs[varname]
+                        tmp_productions = []
+                        for i in range(n):
+                            tmp_production = []
+                            symbol = str(i)
+                            tmp_production.append((symbol, self.T))
+                            tmp_productions.append(tmp_production)
+                            self.terminals.add(symbol)
+                    else:
+                        # Usual case: iterate through productions on RHS
+                        for production in re.split(production_separator, productions):
+                            production = production.strip().replace(r"\|", "|")
+                            tmp_production = []
+                            for symbol in re.split(non_terminal_pattern, production):
+                                symbol = symbol.replace(r"\<", "<").replace(r"\>", ">")
+                                if len(symbol) == 0:
+                                    continue
+                                elif re.match(non_terminal_pattern, symbol):
+                                    tmp_production.append((symbol, self.NT))
+                                else:
+                                    self.terminals.add(symbol)
+                                    tmp_production.append((symbol, self.T))
+
+                            tmp_productions.append(tmp_production)
                     # Create a rule
                     if not lhs in self.rules:
                         self.rules[lhs] = tmp_productions
@@ -424,7 +428,7 @@ CROSSOVER_PROBABILITY = 0.7
 #GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/boolean.bnf", fitness.BooleanProblem(5, lambda x: ~(x[0] ^ x[1] ^ x[2] ^ x[3] ^ x[4]))
 #GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/letter.bnf", StringMatch("golden")
 #GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/arithmetic.pybnf", fitness.MaxFitness()
-GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/symbolic_regression_2d.bnf", fitness.SymbolicRegressionFitnessFunction("data/fagan_train.dat", "data/fagan_test.dat")
+GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/symbolic_regression.bnf", fitness.SymbolicRegressionFitnessFunction("data/fagan_train.dat", "data/fagan_test.dat")
 #GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/boolean_hof.bnf", fitness.BooleanProblemGeneral([2, 3], [5], lambda x: reduce((lambda u, v: u ^ v), x))
 
 def mane():

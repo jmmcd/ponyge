@@ -2,5 +2,6 @@
 <expr> ::= <bop>(<expr>, <expr>) | <uop>(<expr>) | <var> | <const>
 <bop> ::= add | subtract | multiply | divide
 <uop> ::= square | sin | cos
-<var> ::= x[0]
+<var> ::= x[<varidx>]
+<varidx> ::= GE_RANGE:n_vars
 <const> ::= 0.1 | 0.2 | 0.3 | 0.4 | 0.5
