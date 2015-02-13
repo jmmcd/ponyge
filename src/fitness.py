@@ -162,10 +162,8 @@ class SymbolicRegressionFitnessFunction:
     """Fitness function for symbolic regression problems. Yes, it's a
     Verb in the Kingdom of Nouns
     (http://steve-yegge.blogspot.com/2006/03/execution-in-kingdom-of-nouns.html).
-    The reason is that the function needs some extra data to go with
-    it: an arity, a list of bounds and increments to create the test
-    cases. Actually there are lots of bits and pieces and it's best to
-    keep them together."""
+    The function needs some extra data to go with it -- it stores
+    train and test data etc."""
 
     @classmethod
     def __init__(self, filename, test_filename=None,
