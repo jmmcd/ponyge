@@ -50,7 +50,7 @@ def get_subtree(t, path):
     for item in path:
         t = t[item]
     return t
-    
+
 def depth(path):
     """The depth of any node is the number on nonzero elements in its
     path."""
@@ -85,7 +85,7 @@ def random_dt(grammar, s=None):
 def dt_mutation(t, grammar):
     """Given a derivation tree, mutate it by choosing a non-terminal
     and growing from there according to the grammar."""
-    
+
     # Get all the items in t, excluding the root and terminals.
     m_pts = [p for p in list(traverse(t))[1:]
              if p[0] not in grammar.terminals]
@@ -105,13 +105,13 @@ def dt_mutation(t, grammar):
 
     # Get the new random subtree to be pasted
     m_subtree = random_dt(grammar, m_pt[0])
-    
+
     # Perform the mutation
     m_ins_pt[m_idx] = m_subtree
 
 def dt_crossover(t, s, grammar):
     """Cross two trees over, but only on matching non-terminals."""
-    
+
     # Get all the items in t and in s, excluding the root and
     # terminals.
     t_pts = [p for p in list(traverse(t))[1:]
@@ -153,7 +153,7 @@ def dt_crossover(t, s, grammar):
     # Get the index in the parent list at which to paste
     t_idx = tx_pt_pth[-2]
     s_idx = sx_pt_pth[-2]
-    
+
     # Get the subtrees to be pasted
     tx_subtree = tx_pt[1]
     sx_subtree = sx_pt[1]
@@ -163,10 +163,10 @@ def dt_crossover(t, s, grammar):
 
 def main():
     from ponyge import Grammar
-    grammar = Grammar("grammars/letter.bnf")
-    
+    grammar = Grammar("grammars/symbolic_regression.bnf", n_vars=3)
+
     dt = random_dt(grammar)
-    print "dt", dt
+    print "random dt", dt
     print "dt derivation", derived_str(dt, grammar)
 
     print "subtree (1,)", get_subtree(dt, (1,))
@@ -174,16 +174,16 @@ def main():
     print "subtree (1, 1)", get_subtree(dt, (1, 1))
     print "node (1, 1)", get_node(dt, (1, 1))
     print "depth of node (1, 1)", depth((1, 1))
-    
+
     ds = random_dt(grammar)
-    print "ds", ds
+    print "random ds", ds
     print "ds derivation", derived_str(ds, grammar)
-    
+
     dt_crossover(dt, ds, grammar)
-    print derived_str(dt, grammar)
+    print "crossover dt/ds", derived_str(dt, grammar)
 
     dt_mutation(dt, grammar)
-    print derived_str(dt, grammar)
+    print "mutation dt", derived_str(dt, grammar)
 
     print "++++++++++++++++++"
     for item in traverse(dt):

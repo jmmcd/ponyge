@@ -426,9 +426,9 @@ MUTATION_PROBABILITY = 0.01
 CROSSOVER_PROBABILITY = 0.7
 #GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/boolean_hof.bnf", fitness.BooleanProblem(5, lambda x: ~(x[0] ^ x[1] ^ x[2] ^ x[3] ^ x[4]))
 #GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/boolean.bnf", fitness.BooleanProblem(5, lambda x: ~(x[0] ^ x[1] ^ x[2] ^ x[3] ^ x[4]))
-#GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/letter.bnf", StringMatch("golden")
+GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/letter.bnf", StringMatch("golden")
 #GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/arithmetic.pybnf", fitness.MaxFitness()
-GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/symbolic_regression.bnf", fitness.SymbolicRegressionFitnessFunction("data/fagan_train.dat", "data/fagan_test.dat")
+# GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/symbolic_regression.bnf", fitness.SymbolicRegressionFitnessFunction("data/fagan_train.dat", "data/fagan_test.dat")
 #GRAMMAR_FILE, FITNESS_FUNCTION = "grammars/boolean_hof.bnf", fitness.BooleanProblemGeneral([2, 3], [5], lambda x: reduce((lambda u, v: u ^ v), x))
 
 def mane():
